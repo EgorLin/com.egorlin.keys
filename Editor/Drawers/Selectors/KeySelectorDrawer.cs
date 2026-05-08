@@ -1,0 +1,201 @@
+using System.Collections.Generic;
+using EgorLin.Keys.Backend.Indexers.Collection;
+using EgorLin.Keys.Backend.Indexers.Items;
+using EgorLin.Keys.Editor.Widgets.Windows;
+using EgorLin.Keys.Ids;
+using EgorLin.Keys.Selectors.Assets;
+using EgorLin.Keys.Tags.Commands;
+using Sirenix.OdinInspector.Editor;
+using UnityEditor;
+using UnityEngine;
+
+namespace EgorLin.Keys.Editor.Drawers.Selectors
+{
+    public class KeySelectorDrawer : OdinValueDrawer<KeySelector>
+    {
+        private GUIStyle pathStyle;
+        private GUIStyle iconStyle;
+        
+        protected override void Initialize()
+        {
+            base.Initialize();
+            InitializeStyles();
+        }
+        
+        private void InitializeStyles()
+        {
+            pathStyle = KeySelectorDrawerStyles.CreatePathStyle();
+            iconStyle = KeySelectorDrawerStyles.CreateIconStyle();
+        }
+        
+        protected override void DrawPropertyLayout(GUIContent label)
+        {
+            var selector = ValueEntry.SmartValue;
+            var keyId = selector.KeyId;
+            
+            DrawCompactSelector(selector, keyId);
+        }
+
+        private void DrawCompactSelector(KeySelector selector, KeyId keyId)
+        {
+            var rect = EditorGUILayout.GetControlRect(false, KeySelectorDrawerStyles.CompactHeight);
+            
+            var bgColor = keyId.IsEmpty 
+                ? KeySelectorDrawerStyles.ColorBackgroundEmpty
+                : KeySelectorDrawerStyles.ColorBackgroundSet;
+            
+            EditorGUI.DrawRect(rect, bgColor);
+            
+            var iconRect = new Rect(
+                rect.x + KeySelectorDrawerStyles.IconPadding, 
+                rect.y + (rect.height - KeySelectorDrawerStyles.IconSize) / 2, 
+                KeySelectorDrawerStyles.IconSize, 
+                KeySelectorDrawerStyles.IconSize
+            );
+            
+            var textRect = new Rect(
+                iconRect.xMax,
+                rect.y,
+                rect.width - iconRect.width - KeySelectorDrawerStyles.IconPadding,
+                rect.height
+            );
+            
+            DrawIcon(iconRect, keyId.IsEmpty);
+            DrawPathWithKey(textRect, keyId);
+            
+            HandleInput(rect, selector, keyId);
+        }
+        
+        private void DrawIcon(Rect iconRect, bool isEmpty)
+        {
+            var icon = isEmpty ? KeySelectorDrawerStyles.IconEmpty : KeySelectorDrawerStyles.IconSet;
+            GUI.Label(iconRect, icon, iconStyle);
+        }
+        
+        private void DrawPathWithKey(Rect rect, KeyId keyId)
+        {
+            if (keyId.IsEmpty)
+            {
+                KeySelectorDrawerStyles.ConfigureButtonStyleForEmpty(pathStyle);
+                GUI.Label(rect, KeySelectorDrawerStyles.LabelNoKeySelected, pathStyle);
+                return;
+            }
+            
+            KeySelectorDrawerStyles.ConfigureButtonStyleForSet(pathStyle);
+            var fullPath = GetFullPathWithKey(keyId);
+            GUI.Label(rect, fullPath, pathStyle);
+        }
+        
+        private string GetFullPathWithKey(KeyId keyId)
+        {
+            var collection = KeyCollectionOwnerIndexer.Get(keyId);
+            
+            var parts = new List<string>();
+            
+            foreach (var pathNode in collection.GetAllPaths())
+            {
+                var tag = CommandKeyTagGetTag.Execute(pathNode.TagId);
+                parts.Add(tag.Value);
+            }
+            
+            var keyValue2 = KeyItemIndexer.GetValue(keyId);
+            var keyTag = CommandKeyTagGetTag.Execute(keyValue2.TagId);
+            parts.Add(keyTag.Value);
+            
+            return string.Join(" " + KeySelectorDrawerStyles.LabelPathArrow + " ", parts);
+        }
+        
+        private void HandleInput(Rect rect, KeySelector selector, KeyId keyId)
+        {
+            var e = Event.current;
+            
+            if (rect.Contains(e.mousePosition))
+            {
+                if (e.type == EventType.MouseDown && e.button == 0)
+                {
+                    KeyWidgetWindowSelectorSearch.Open(selector.SetKey);
+                    e.Use();
+                }
+                
+                if (e.type == EventType.MouseDown && e.button == 1)
+                {
+                    ShowContextMenu(selector, keyId);
+                    e.Use();
+                }
+            }
+        }
+        
+        private void ShowContextMenu(KeySelector selector, KeyId keyId)
+        {
+            var menu = new GenericMenu();
+            
+            if (!keyId.IsEmpty)
+            {
+                
+                menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemCopyHash), false, () =>
+                {
+                    EditorGUIUtility.systemCopyBuffer = keyId.Hash.ToString();
+                    Debug.Log(string.Format(KeySelectorDrawerStyles.LogCopiedHash, keyId.Hash));
+                });
+                
+                menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemCopyPath), false, () =>
+                {
+                    var path = GetFullPathWithKey(keyId);
+                    EditorGUIUtility.systemCopyBuffer = path;
+                    Debug.Log(string.Format(KeySelectorDrawerStyles.LogCopiedPath, path));
+                });
+                
+                menu.AddSeparator("");
+                
+                menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemShowInProject), false, () =>
+                {
+                    var collectionOwner = KeyCollectionOwnerIndexer.Get(keyId);
+                    var asset = collectionOwner.GetOwner();
+                    
+                    if (asset != null)
+                    {
+                        EditorGUIUtility.PingObject(asset);
+                        Selection.activeObject = asset;
+                    }
+                });
+                
+                menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemInfo), false, () =>
+                {
+                    ShowKeyInfo(keyId);
+                });
+                
+                menu.AddSeparator("");
+                
+                menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemClear), false, () =>
+                {
+                    selector.SetKey(KeyId.Empty);
+                    GUI.changed = true;
+                });
+            }
+            else
+            {
+                menu.AddDisabledItem(new GUIContent(KeySelectorDrawerStyles.MenuItemNoKeySelected));
+            }
+            
+            menu.ShowAsContext();
+        }
+        
+        private void ShowKeyInfo(KeyId keyId)
+        {
+            var keyValue = KeyItemIndexer.GetValue(keyId);
+            var tag = CommandKeyTagGetTag.Execute(keyValue.TagId);
+            
+            var message = string.Format(KeySelectorDrawerStyles.DialogMessageKeyInfo,
+                tag.Value,
+                keyId.Hash,
+                GetFullPathWithKey(keyId)
+            );
+            
+            EditorUtility.DisplayDialog(
+                KeySelectorDrawerStyles.DialogTitleKeyInfo,
+                message,
+                KeySelectorDrawerStyles.DialogButtonOK
+            );
+        }
+    }
+}

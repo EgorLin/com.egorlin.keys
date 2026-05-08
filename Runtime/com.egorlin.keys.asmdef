@@ -1,0 +1,17 @@
+{
+    "name": "com.egorlin.keys",
+    "rootNamespace": "EgorLin.Keys",
+    "references": [
+        "GUID:0ff4398da601a5d3b8ce461dba2ed628",
+        "GUID:035131e8c8163ea18905903ca60fc32d"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

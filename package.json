@@ -1,0 +1,9 @@
+{
+  "name": "com.egorlin.keys",
+  "version": "1.0.0",
+  "displayName": "Keys",
+  "description": "System of fast keys",
+  "unity": "6000.3",
+  "author": { "name": "EgorLin" },
+  "dependencies": {}
+}
