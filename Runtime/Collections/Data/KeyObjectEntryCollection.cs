@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using EgorLin.Keys.Items.Data;
+using EgorLin.Keys.Tags.Data;
 
 namespace EgorLin.Keys.Collections.Data
 {
@@ -13,7 +13,7 @@ namespace EgorLin.Keys.Collections.Data
 	[Serializable]
 	public class KeyObjectEntry<T>
 	{
-		public KeyItem Key;
+		public KeyTag Key;
 		public T Value;
 	}
 }

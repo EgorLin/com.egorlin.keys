@@ -12,10 +12,9 @@ namespace EgorLin.Keys.Editor.Widgets.Items
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
-            var isInvalid = KeyWidgetItemTag.IsTagInvalid(tag);
-            var textTag = KeyWidgetItemTag.GetTagText(tag, isInvalid);
+            var textTag = tag.Value;
             
-            KeyWidgetItemTag.Draw(textTag, isInvalid);
+            KeyWidgetItemTag.Draw(textTag);
 
             GUILayout.FlexibleSpace();
             

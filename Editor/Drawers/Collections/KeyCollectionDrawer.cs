@@ -9,8 +9,7 @@ using EgorLin.Keys.Editor.Widgets.Items;
 using EgorLin.Keys.Editor.Widgets.Paths;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Items.Data;
-using EgorLin.Keys.Tags.Commands;
+using EgorLin.Keys.Tags.Data;
 using EgorLin.Pools;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -21,7 +20,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
     public class KeyCollectionDrawer : OdinValueDrawer<KeyCollection>
     {
         private readonly ModelKeyWidgetPathRoot _modelPath = new();
-        private readonly ModelKeyItems<KeyItem> _modelKeys = new((item) => item);
+        private readonly ModelKeyItems<KeyTag> _modelKeys = new((item) => item);
         
         protected override void DrawPropertyLayout(GUIContent label)
         {
@@ -85,7 +84,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             _modelKeys.SetTextSearch(textSearch);
         }
 
-        private void DrawList(List<KeyItem> keys)
+        private void DrawList(List<KeyTag> keys)
         {
             if (keys.Count == 0)
             {
@@ -95,12 +94,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             }
             else
             {
-                var result = KeyWidgetItemList.DrawList(_modelKeys, (keyItem) =>
-                {
-                    var keyTag = CommandKeyTagGetTag.Execute(keyItem.TagId);
-                
-                    return KeyWidgetItemRaw.Draw(keyTag, keyItem.Id);
-                });
+                var result = KeyWidgetItemList.DrawList(_modelKeys, (keyItem) => KeyWidgetItemRaw.Draw(keyItem, keyItem.Id));
                 
                 if (result.HasItemToRemove)
                 {
@@ -109,7 +103,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             }
         }
 
-        private void Clear(List<KeyItem> keys)
+        private void Clear(List<KeyTag> keys)
         {
             if (!KeyWidgetDialogClear.Draw(keys.Count))
             {
@@ -121,33 +115,33 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             _modelKeys.SetDirty(true);
         }
 
-        private void RemoveItem(List<KeyItem> keys, KeyItem key)
+        private void RemoveItem(List<KeyTag> keys, KeyTag key)
         {
             keys.Remove(key);
             
             _modelKeys.SetDirty(true);
         }
 
-        private void OpenAdd(List<KeyItem> keys)
+        private void OpenAdd(List<KeyTag> keys)
         {
-            var lockedTagIds = PoolFastList<KeyId>.Spawn();
+            var lockedTagIds = PoolFastList<string>.Spawn();
             
             foreach (var value in keys)
             {
-                lockedTagIds.Add(value.TagId);
+                lockedTagIds.Add(value.Value);
             }
             
             KeyWidgetWindowAddTag.Open(lockedTagIds, tagId =>
             {
                 AddKey(keys, tagId);
                 
-                PoolFastList<KeyId>.Recycle(lockedTagIds);
+                PoolFastList<string>.Recycle(lockedTagIds);
             });
         }
         
-        private void AddKey(List<KeyItem> keys, KeyId tagId)
+        private void AddKey(List<KeyTag> keys, string tag)
         {
-            var keyItem = KeyItem.Create(tagId);
+            var keyItem = KeyTag.Create(tag);
             
             keys.Add(keyItem);
             

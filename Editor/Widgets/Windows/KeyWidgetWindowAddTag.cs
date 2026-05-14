@@ -1,11 +1,6 @@
 using System;
 using System.Collections.Generic;
 using EgorLin.Collections.Unsafe;
-using EgorLin.Keys.Backend.Database;
-using EgorLin.Keys.Ids;
-using EgorLin.Keys.Tags.Commands;
-using EgorLin.Keys.Tags.Data;
-using EgorLin.Keys.Utils;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,12 +10,12 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
     {
         private string _search = "";
         private Vector2 _scroll;
-        private readonly List<KeyTag> _results = new();
-        private Action<KeyId> _onSelected;
-        private FastList<KeyId> _lockedValues = new();
+        private readonly List<string> _results = new();
+        private Action<string> _onSelected;
+        private FastList<string> _lockedValues = new();
         private Action _onClose;
 
-        public static void Open(FastList<KeyId> lockedTags, Action<KeyId> onSelected, Action onClose = null)
+        public static void Open(FastList<string> lockedTags, Action<string> onSelected, Action onClose = null)
         {
             var window = CreateInstance<KeyWidgetWindowAddTag>();
             
@@ -31,7 +26,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             window._onClose = onClose;
             
             window._lockedValues = lockedTags;
-            window._lockedValues ??= new FastList<KeyId>();
+            window._lockedValues ??= new FastList<string>();
             
             window.RefreshResults();
             window.ShowUtility();
@@ -115,7 +110,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             EditorGUILayout.EndScrollView();
         }
      
-        private bool DrawTagButton(KeyTag tag, bool isRecent, FastList<KeyId> lockedValues)
+        private bool DrawTagButton(string tag, bool isRecent, FastList<string> lockedValues)
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
 
@@ -123,9 +118,9 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             
             var icon = isRecent ? KeyWidgetWindowAddStyles.IconRecent : KeyWidgetWindowAddStyles.IconTag;
             
-            if (KeyWidgetWindowAddStyles.DrawTagButton(icon, tag.Value, isLocked, KeyWidgetWindowAddStyles.GetTagButtonStyle()))
+            if (KeyWidgetWindowAddStyles.DrawTagButton(icon, tag, isLocked, KeyWidgetWindowAddStyles.GetTagButtonStyle()))
             {
-                SelectTag(tag.Id);
+                SelectTag(tag);
                 EditorGUILayout.EndHorizontal();
                 
                 return true;
@@ -138,11 +133,11 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             return false;
         }
 
-        private static bool HasInLocked(KeyTag tag, FastList<KeyId> lockedValues)
+        private static bool HasInLocked(string checkValue, FastList<string> lockedValues)
         {
             foreach (var value in lockedValues)
             {
-                if (tag.Id == value)
+                if (checkValue == value)
                 {
                     return true;
                 }
@@ -153,20 +148,9 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 
         private void DrawCreateNew()
         {
-            var hasTag = CommandKeyTagHas.Has(_search);
-            
-            if (hasTag)
+            if (HasInLocked(_search, _lockedValues))
             {
-                var keyTag = CommandKeyTagGetTag.Execute(_search);
-
-                if (HasInLocked(keyTag, _lockedValues))
-                {
-                    DrawLockedExistingButton(keyTag);
-                }
-                else
-                {
-                    DrawUseExistingButton(keyTag);
-                }
+                DrawLockedExistingButton(_search);
             }
             else
             {
@@ -174,24 +158,12 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             }
         }
         
-        private void DrawLockedExistingButton(KeyTag existingTag)
+        private void DrawLockedExistingButton(string existingTag)
         {
-            var label = string.Format(KeyWidgetWindowAddStyles.LabelLockedTag, existingTag.Value);
+            var label = string.Format(KeyWidgetWindowAddStyles.LabelLockedTag, existingTag);
 
             KeyWidgetWindowAddStyles.DrawColoredButton(label, KeyWidgetWindowAddStyles.ColorLockedTagButton,
                 KeyWidgetWindowAddStyles.LayoutOptionCreateButtonHeight);
-        }
-        
-        private void DrawUseExistingButton(KeyTag existingTag)
-        {
-            var label = string.Format(KeyWidgetWindowAddStyles.LabelUseExistingTag, existingTag.Value);
-            
-            if (KeyWidgetWindowAddStyles.DrawColoredButton(label, 
-                KeyWidgetWindowAddStyles.ColorExistingTagButton, 
-                KeyWidgetWindowAddStyles.LayoutOptionCreateButtonHeight))
-            {
-                SelectTag(existingTag.Id);
-            }
         }
         
         private void DrawCreateNewButton()
@@ -202,14 +174,13 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
                 KeyWidgetWindowAddStyles.ColorCreateNewButton, 
                 KeyWidgetWindowAddStyles.LayoutOptionCreateButtonHeight))
             {
-                var newId = CommandKeyTagGetOrCreateTagId.Execute(_search);
-                SelectTag(newId);
+                SelectTag(_search);
             }
         }
      
-        private void SelectTag(KeyId tagId)
+        private void SelectTag(string tag)
         {
-            _onSelected?.Invoke(tagId);
+            _onSelected?.Invoke(tag);
             Close();
         }
      
@@ -217,18 +188,9 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         {
             _results.Clear();
             
-            var database = KeyTagDatabaseProvider.Get();
-            var tags = database.GetTags();
-
-            var isSearchEmpty = string.IsNullOrEmpty(_search);
-            var lowValue = _search.ToLowerInvariant();
-            
-            foreach (var keyTag in tags)
+            foreach (var keyTag in _lockedValues)
             {
-                if (!keyTag.IsEmpty() && (isSearchEmpty || SearchUtils.FuzzyMatch(keyTag.Value, lowValue)))
-                {
-                    _results.Add(keyTag);
-                }
+                _results.Add(keyTag);
             }
         }
     }

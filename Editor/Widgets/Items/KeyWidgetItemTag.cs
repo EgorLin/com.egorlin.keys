@@ -18,26 +18,16 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 		
 		private static readonly GUILayoutOption OptionWidth = GUILayout.Width(200);
 		
-		public static void Draw(string value, bool invalid)
+		public static void Draw(string value)
 		{
 			var prev = GUI.color;
-			GUI.color = invalid ? ColorInvalid : prev;
+			GUI.color = prev;
 
 			var text = string.Format(TextLabelTag, value);
 			
 			EditorGUILayout.LabelField(text, Style, OptionWidth);
 
 			GUI.color = prev;
-		}
-
-		public static string GetTagText(KeyTag tag, bool isInvalid)
-		{
-			return isInvalid ? TextLabelInvalid : tag.Value;
-		}
-
-		public static bool IsTagInvalid(KeyTag tag)
-		{
-			return tag.IsEmpty();
 		}
 	}
 }

@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using EgorLin.Keys.Items.Data;
 using EgorLin.Keys.Paths.Data;
-using EgorLin.Keys.Tags.Commands;
+using EgorLin.Keys.Tags.Data;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,16 +43,15 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
             EditorGUILayout.EndHorizontal();
 		}
 		
-		public static string GetLabelPath(List<KeyItem> pathValues)
+		public static string GetLabelPath(List<KeyTag> pathValues)
 		{
 			var pathString = "";
 			
 			for (var index = 0; index < pathValues.Count; index++)
 			{
 				var value = pathValues[index];
-				var tag = CommandKeyTagGetTag.Execute(value.TagId);
 
-				pathString += tag.Value;
+				pathString += value.Value;
 				if (index != pathValues.Count - 1)
 				{
 					pathString += " / ";

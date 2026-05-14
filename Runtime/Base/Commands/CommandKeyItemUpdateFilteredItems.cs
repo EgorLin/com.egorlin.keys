@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
 using EgorLin.Keys.Base.Models;
-using EgorLin.Keys.Tags.Commands;
 using EgorLin.Keys.Utils;
 
 namespace EgorLin.Keys.Base.Commands
@@ -21,8 +20,7 @@ namespace EgorLin.Keys.Base.Commands
 
             foreach (var value in values)
             {
-                var keyItem = model.GetKeyItem(value);
-                var tag = CommandKeyTagGetTag.Execute(keyItem.TagId);
+                var tag = model.GetKeyItem(value);
                 var has = SearchUtils.FuzzyMatch(tag.Value, model.Text);
 
                 if (has)

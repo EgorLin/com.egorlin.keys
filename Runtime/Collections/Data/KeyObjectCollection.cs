@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Items.Data;
+using EgorLin.Keys.Tags.Data;
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data
@@ -16,17 +16,17 @@ namespace EgorLin.Keys.Collections.Data
 		public List<KeyObjectEntry<T>> Keys => _keys.Values;
 		public IntHashMap<T> ValuesMap => BuildMap();
 
-		public override KeyItem GetKeyById(KeyId id)
+		public override KeyTag GetKeyById(KeyId id)
 		{
-			foreach (var keyItem in Keys)
+			foreach (var keyTag in Keys)
 			{
-				if (keyItem.Key.Id == id)
+				if (keyTag.Key.Id == id)
 				{
-					return keyItem.Key;
+					return keyTag.Key;
 				}
 			}
 			
-			return KeyItem.Empty;
+			return KeyTag.Empty;
 		}
 
 		protected override void InitializeInternal()
@@ -34,17 +34,17 @@ namespace EgorLin.Keys.Collections.Data
 			_keys ??= new KeyObjectEntryCollection<T>() { Values = new List<KeyObjectEntry<T>>() };
 		}
 
-		public override IEnumerable<KeyItem> GetAllKeys()
+		public override IEnumerable<KeyTag> GetAllKeys()
 		{
 			return Keys.Select(entry => entry.Key);
 		}
 
-		protected override KeyItem GetKey(int index)
+		protected override KeyTag GetKey(int index)
 		{
 			return Keys[index].Key;
 		}
 
-		protected override void SetKey(KeyItem key, int index)
+		protected override void SetKey(KeyTag key, int index)
 		{
 			var entryNew = new KeyObjectEntry<T>
 			{
@@ -61,11 +61,11 @@ namespace EgorLin.Keys.Collections.Data
 		}
 
 #if UNITY_EDITOR
-		public void AddEntry(KeyId tagId)
+		public void AddEntry(string tag)
 		{
 			Keys.Add(new KeyObjectEntry<T>
 			{
-				Key = KeyItem.Create(tagId),
+				Key = KeyTag.Create(tag),
 				Value = default
 			});
 		}

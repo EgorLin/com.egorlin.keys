@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.Widgets.Base;
-using EgorLin.Keys.Items.Data;
+using EgorLin.Keys.Tags.Data;
 using UnityEditor;
 
 namespace EgorLin.Keys.Editor.Widgets.Paths
@@ -23,7 +23,7 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 			EditorGUILayout.EndVertical();
 		}
 		
-		private static void UpdatePath(List<KeyItem> pathItems, ModelKeyWidgetPathRoot model)
+		private static void UpdatePath(List<KeyTag> pathItems, ModelKeyWidgetPathRoot model)
 		{
 			if (model.IsDirty)
 			{

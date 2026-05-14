@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using EgorLin.Keys.Backend.Indexers.Collection;
-using EgorLin.Keys.Tags.Commands;
 using UnityEditor;
 using UnityEngine;
 
@@ -80,22 +79,20 @@ namespace EgorLin.Keys.Editor.CodeGeneration
 					
 					foreach (var pathNode in collection.GetAllPaths())
 					{
-						var tag = CommandKeyTagGetTag.Execute(pathNode.TagId);
+						var tag = pathNode.Value;
 						
-						if (!tag.IsEmpty())
+						if (!pathNode.IsEmpty())
 						{
-							pathParts.Add(tag.Value);
+							pathParts.Add(tag);
 						}
 					}
 					
-					var keyTag = CommandKeyTagGetTag.Execute(keyValue.TagId);
-					
-					if (!keyTag.IsEmpty())
+					if (!keyValue.IsEmpty())
 					{
 						result.Add(new KeyCollectionData
 						{
 							PathParts = pathParts,
-							KeyName = keyTag.Value,
+							KeyName = keyValue.Value,
 							KeyHash = keyValue.Id.Hash
 						});
 					}

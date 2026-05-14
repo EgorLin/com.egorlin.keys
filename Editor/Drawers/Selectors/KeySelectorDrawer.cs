@@ -4,7 +4,6 @@ using EgorLin.Keys.Backend.Indexers.Items;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Selectors.Assets;
-using EgorLin.Keys.Tags.Commands;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
@@ -94,13 +93,11 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             
             foreach (var pathNode in collection.GetAllPaths())
             {
-                var tag = CommandKeyTagGetTag.Execute(pathNode.TagId);
-                parts.Add(tag.Value);
+                parts.Add(pathNode.Value);
             }
             
             var keyValue2 = KeyItemIndexer.GetValue(keyId);
-            var keyTag = CommandKeyTagGetTag.Execute(keyValue2.TagId);
-            parts.Add(keyTag.Value);
+            parts.Add(keyValue2.Value);
             
             return string.Join(" " + KeySelectorDrawerStyles.LabelPathArrow + " ", parts);
         }
@@ -183,10 +180,9 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
         private void ShowKeyInfo(KeyId keyId)
         {
             var keyValue = KeyItemIndexer.GetValue(keyId);
-            var tag = CommandKeyTagGetTag.Execute(keyValue.TagId);
             
             var message = string.Format(KeySelectorDrawerStyles.DialogMessageKeyInfo,
-                tag.Value,
+                keyValue.Value,
                 keyId.Hash,
                 GetFullPathWithKey(keyId)
             );

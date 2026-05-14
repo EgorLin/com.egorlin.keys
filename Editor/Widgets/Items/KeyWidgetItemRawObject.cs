@@ -2,7 +2,6 @@ using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.Drawers.Collections;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Tags.Commands;
 using Sirenix.OdinInspector;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -16,17 +15,14 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 		
         public static KeyWidgetItemRawResult Draw<T>(KeyObjectEntry<T> entry)
         {
-	        var tag = CommandKeyTagGetTag.Execute(entry.Key.TagId);
-	        
-	        var isInvalid = KeyWidgetItemTag.IsTagInvalid(tag);
-	        var textTag = KeyWidgetItemTag.GetTagText(tag, isInvalid);
+	        var textTag = entry.Key.Value;
 	        
 	        var isObjectType = typeof(Object).IsAssignableFrom(typeof(T));
 	        if (isObjectType)
 	        {
 		        EditorGUILayout.BeginHorizontal();
 		        
-		        KeyWidgetItemTag.Draw(textTag, isInvalid);
+		        KeyWidgetItemTag.Draw(textTag);
 		        
 		        GUILayout.FlexibleSpace();
 		        
@@ -50,7 +46,7 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 		        
 		        EditorGUILayout.BeginHorizontal();
 		        
-		        KeyWidgetItemTag.Draw(textTag, isInvalid);
+		        KeyWidgetItemTag.Draw(textTag);
 		        GUILayout.FlexibleSpace();
 		        
 		        KeyWidgetItemHash.Draw(entry.Key.Id.Hash);

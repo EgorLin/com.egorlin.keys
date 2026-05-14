@@ -1,11 +1,8 @@
-#if UNITY_EDITOR
-#endif
 using System;
 using System.Collections.Generic;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Items.Data;
 using EgorLin.Keys.Owners;
-using EgorLin.Keys.Tags.Commands;
+using EgorLin.Keys.Tags.Data;
 using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -18,10 +15,10 @@ namespace EgorLin.Keys.Collections.Data
 	[InlineProperty]
 	public abstract class KeyCollectionBase : IKeyCollectionOwner, ISerializationCallbackReceiver
 	{
-		[SerializeField] protected KeyItemValues path;
+		[SerializeField] protected KeyTagValues path;
 		[SerializeField] protected Object owner;
 
-		public List<KeyItem> Paths => path.Values;
+		public List<KeyTag> Paths => path.Values;
 
 		protected KeyCollectionBase()
 		{
@@ -39,22 +36,22 @@ namespace EgorLin.Keys.Collections.Data
                 
 				if (key.Id.IsEmpty)
 				{
-					var tagId = CommandKeyTagGetOrCreateTagId.Execute("new");
-                    
-					key = KeyItem.Create(tagId);
+					key = KeyTag.Create("new");
+				
+					SetKey(key, index);
 				}
 			}
 #endif
 		}
 
-		public void AddPath(KeyId tagId)
+		public void AddPath(string tag)
 		{
-			var value = KeyItem.CreateWithoutId(tagId);
+			var value = KeyTag.CreateWithoutId(tag);
 			
 			path.Values.Add(value);
 		}
 
-		public IEnumerable<KeyItem> GetAllPaths()
+		public IEnumerable<KeyTag> GetAllPaths()
 		{
 			return path.Values;
 		}
@@ -84,19 +81,18 @@ namespace EgorLin.Keys.Collections.Data
 
 		private void Initialize()
 		{
-			path ??= new KeyItemValues { Values = new List<KeyItem>() };
+			path ??= new KeyTagValues { Values = new List<KeyTag>() };
 			
 			InitializeInternal();
 		}
 
-
-		public abstract IEnumerable<KeyItem> GetAllKeys();
-		public abstract KeyItem GetKeyById(KeyId id);
+		public abstract IEnumerable<KeyTag> GetAllKeys();
+		public abstract KeyTag GetKeyById(KeyId id);
 		protected abstract void InitializeInternal();
 
-		protected abstract KeyItem GetKey(int index);
+		protected abstract KeyTag GetKey(int index);
 
-		protected abstract void SetKey(KeyItem key, int index);
+		protected abstract void SetKey(KeyTag key, int index);
 
 		protected abstract int GetKeysCount();
 

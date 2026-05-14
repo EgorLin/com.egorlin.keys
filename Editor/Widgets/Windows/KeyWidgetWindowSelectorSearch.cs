@@ -4,8 +4,7 @@ using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Backend.Indexers.Collection;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Items.Data;
-using EgorLin.Keys.Tags.Commands;
+using EgorLin.Keys.Tags.Data;
 using EgorLin.Keys.Utils;
 using EgorLin.Pools;
 using UnityEditor;
@@ -201,7 +200,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             }
         }
      
-        private void DrawKeyEntry(KeyItem keyItem, bool isRecent, string path)
+        private void DrawKeyEntry(KeyTag keyItem, bool isRecent, string path)
         {
             var rect = EditorGUILayout.GetControlRect(false, KeyWidgetWindowSelectorSearchStyles.EntryHeight);
             
@@ -210,12 +209,9 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             
             EditorGUI.DrawRect(rect, bgColor);
 
-            var keyValueTagId = keyItem.TagId;
-            var keyTag = CommandKeyTagGetTag.Execute(keyValueTagId);
-
             DrawEntryLeftBorder(rect);
             DrawEntryIcon(rect, isRecent);
-            DrawEntryName(rect, keyTag.Value);
+            DrawEntryName(rect, keyItem.Value);
             DrawEntryPath(rect, path);
             DrawEntryHash(rect, keyItem.Id);
             
@@ -293,7 +289,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             GUI.Label(hashRect, hashLabel, KeyWidgetWindowSelectorSearchStyles.CreateHashStyle());
         }
      
-        private void SelectKey(KeyItem item)
+        private void SelectKey(KeyTag item)
         {
             _onSelected?.Invoke(item.Id);
             Close();
@@ -307,8 +303,8 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             {
                 buffer.Add(new ModelKeyCollectionEntrySearch
                 {
-                    Paths = new List<KeyItem>(collection.GetAllPaths()),
-                    Keys = new List<KeyItem>(collection.GetAllKeys()),
+                    Paths = new List<KeyTag>(collection.GetAllPaths()),
+                    Keys = new List<KeyTag>(collection.GetAllKeys()),
                 });
             }
         }
@@ -349,9 +345,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         {
             foreach (var resultPathPart in entryToCheck.Paths)
             {
-                var keyTag = CommandKeyTagGetTag.Execute(resultPathPart.TagId);
-
-                var matched = SearchUtils.FuzzyMatch(keyTag.Value, searchFormated);
+                var matched = SearchUtils.FuzzyMatch(resultPathPart.Value, searchFormated);
 
                 if (matched)
                 {
@@ -365,12 +359,11 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
                 }
             }
 
-            var resultKeys = new List<KeyItem>();
+            var resultKeys = new List<KeyTag>();
 
             foreach (var keyValue in entryToCheck.Keys)
             {
-                var tag = CommandKeyTagGetTag.Execute(keyValue.TagId);
-                var matchedTag = SearchUtils.FuzzyMatch(tag.Value, searchFormated);
+                var matchedTag = SearchUtils.FuzzyMatch(keyValue.Value, searchFormated);
 
                 if (matchedTag)
                 {

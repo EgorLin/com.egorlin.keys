@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using EgorLin.Keys.Backend.Indexers.Collection;
-using EgorLin.Keys.Backend.Indexers.Tags;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Owners;
 using EgorLin.Pools;
@@ -20,20 +19,13 @@ namespace EgorLin.Keys.Backend
 		public static void Rebuild()
 		{
 			KeyCollectionOwnerIndexer.Clear();
-			KeyTagIndexer.Clear();
-			
-			var tagIds = PoolHashSet<KeyId>.Spawn();
 			
 			var guids = AssetDatabase.FindAssets("t:ScriptableObject t:Prefab");
 
-			CheckAssets(guids, tagIds);
-			
-			KeyTagIndexer.Rebuild(tagIds.Value);
-			
-			PoolHashSet<KeyId>.Recycle(tagIds);
+			CheckAssets(guids);
 		}
 
-		private static void CheckAssets(string[] guids, PooledHashSet<KeyId> tagIds)
+		private static void CheckAssets(string[] guids)
 		{
 			foreach (var guid in guids)
 			{
@@ -51,26 +43,20 @@ namespace EgorLin.Keys.Backend
 						
 						foreach (var collection in container.GetCollections())
 						{
-							RegisterCollection(collection, tagIds);
+							RegisterCollection(collection);
 						}
 					}
 				}
 			}
 		}
 
-		private static void RegisterCollection(IKeyCollectionOwner collection, PooledHashSet<KeyId> tagIds)
+		private static void RegisterCollection(IKeyCollectionOwner collection)
 		{
 			KeyCollectionOwnerIndexer.RegisterOwner(collection);
 			
 			foreach (var keyItem in collection.GetAllKeys())
 			{
 				KeyCollectionOwnerIndexer.Add(keyItem, collection);
-				tagIds.Add(keyItem.TagId);
-			}
-
-			foreach (var keyItem in collection.GetAllPaths())
-			{
-				tagIds.Add(keyItem.TagId);
 			}
 		}
 	}

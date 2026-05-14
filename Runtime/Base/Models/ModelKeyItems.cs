@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
-using EgorLin.Keys.Items.Data;
+using EgorLin.Keys.Tags.Data;
 using UnityEngine;
 
 namespace EgorLin.Keys.Base.Models
 {
 	public class ModelKeyItems<T>
 	{
-		private readonly Func<T, KeyItem> _getKeyItem;
+		private readonly Func<T, KeyTag> _getKeyTags;
 		
 		public string Text { get; private set; } = string.Empty;
         public List<T> FilteredItems { get; } = new();
         public Vector2 ScrollPosition { get; private set; }
         public bool IsDirty { get; private set; } = true;
 
-        public ModelKeyItems(Func<T, KeyItem> getKeyItem)
+        public ModelKeyItems(Func<T, KeyTag> getKeyTags)
         {
-	        _getKeyItem = getKeyItem;
+	        _getKeyTags = getKeyTags;
         }
 
         public void SetTextSearch(string textSearch)
@@ -52,9 +52,9 @@ namespace EgorLin.Keys.Base.Models
 	        ScrollPosition = scroll;
         }
 
-        public KeyItem GetKeyItem(T item)
+        public KeyTag GetKeyItem(T item)
         {
-	        return _getKeyItem.Invoke(item);
+	        return _getKeyTags.Invoke(item);
         }
 
         public void SetDirty(bool value)

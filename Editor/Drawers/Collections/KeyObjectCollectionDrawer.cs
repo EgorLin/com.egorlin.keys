@@ -91,24 +91,24 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
 
         private void OpenAdd(KeyObjectCollection<T> collection)
         {
-            var lockedTagIds = PoolFastList<KeyId>.Spawn();
+            var lockedTagIds = PoolFastList<string>.Spawn();
             
             foreach (var value in collection.Keys)
             {
-                lockedTagIds.Add(value.Key.TagId);
+                lockedTagIds.Add(value.Key.Value);
             }
 
             KeyWidgetWindowAddTag.Open(lockedTagIds, tagId =>
             {
                 AddKey(collection, tagId);
                 
-                PoolFastList<KeyId>.Recycle(lockedTagIds);
+                PoolFastList<string>.Recycle(lockedTagIds);
             });
         }
         
-        private void AddKey(KeyObjectCollection<T> collection, KeyId tagId)
+        private void AddKey(KeyObjectCollection<T> collection, string tag)
         {
-            collection.AddEntry(tagId);
+            collection.AddEntry(tag);
             
             _modelKeys.SetDirty(true);
         }

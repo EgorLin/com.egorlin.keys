@@ -1,8 +1,8 @@
 using System;
 using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Items.Data;
 using EgorLin.Keys.Owners;
+using EgorLin.Keys.Tags.Data;
 using UnityEngine;
 
 namespace EgorLin.Keys.Backend.Indexers.Collection
@@ -33,7 +33,7 @@ namespace EgorLin.Keys.Backend.Indexers.Collection
 			return Owners.AsReadOnlySpan();
 		}
 
-		public static void Add(KeyItem key, IKeyCollectionOwner config)
+		public static void Add(KeyTag key, IKeyCollectionOwner config)
 		{
 			var success = Map.Add(key.Id, config, out _);
 
