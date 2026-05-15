@@ -2,12 +2,12 @@ using EgorLin.Keys.Backend;
 using EgorLin.Keys.Base.Commands;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Collections.Data;
+using EgorLin.Keys.Editor.CodeGeneration;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Dialogs;
 using EgorLin.Keys.Editor.Widgets.Items;
 using EgorLin.Keys.Editor.Widgets.Paths;
 using EgorLin.Keys.Editor.Widgets.Windows;
-using EgorLin.Keys.Ids;
 using EgorLin.Pools;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -20,20 +20,29 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
         private readonly ModelKeyWidgetPathRoot _modelPath = new();
         private readonly ModelKeyItems<KeyObjectEntry<T>> _modelKeys = new((entry) => entry.Key);
 
+        private bool _isSaveDirty;
+
         protected override void DrawPropertyLayout(GUIContent label)
         {
             var collection = ValueEntry.SmartValue;
             
             KeyWidgetInfoBox.Draw();
 
-            if (KeyWidgetSaveButton.DrawSaveButton())
+            if (KeyWidgetSaveButton.DrawSaveButton(_isSaveDirty))
             {
                 CommandKeyCollectionSaveAsset.Execute(Property);
                 EditorApplication.delayCall += () =>
                 {
+                    _isSaveDirty = false;
+                    
                     AssetDatabase.Refresh();
                     KeysBackend.Rebuild();
                 };
+            }
+            
+            if (KeyWidgetGenerateButton.DrawButton())
+            {
+                KeyCollectionCodeGenerator.Generate();
             }
             
             KeyWidgetPathRoot.Draw(collection, _modelPath);
@@ -86,6 +95,45 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                 {
                     Remove(collection, _modelKeys.FilteredItems[result.Index]);
                 }
+
+                if (result.HasItemToRename)
+                {
+                    Rename(collection, _modelKeys.FilteredItems[result.Index]);
+                }
+            }
+        }
+        
+        private void Rename(KeyObjectCollection<T> keys, KeyObjectEntry<T> key)
+        {
+            var lockedTagIds = PoolFastList<string>.Spawn();
+            
+            foreach (var value in keys.GetAllKeys())
+            {
+                lockedTagIds.Add(value.Value);
+            }
+            
+            KeyWidgetWindowAddTag.Open(lockedTagIds, tag =>
+            {
+                Rename(keys, key, tag);
+                
+                SetDirty();
+
+                PoolFastList<string>.Recycle(lockedTagIds);
+            });
+        }
+
+        private static void Rename(KeyObjectCollection<T> keys, KeyObjectEntry<T> key, string tag)
+        {
+            for (int i = 0; i < keys.Keys.Count; i++)
+            {
+                var k = keys.Keys[i];
+                    
+                if (k.Key.Id == key.Key.Id)
+                {
+                    key.Key.Value = tag;
+                    keys.Keys[i] = key;
+                    break;
+                }
             }
         }
 
@@ -102,6 +150,8 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             {
                 AddKey(collection, tagId);
                 
+                SetDirty();
+                
                 PoolFastList<string>.Recycle(lockedTagIds);
             });
         }
@@ -110,7 +160,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
         {
             collection.AddEntry(tag);
             
-            _modelKeys.SetDirty(true);
+            SetDirty();
         }
 
         private void Clear(KeyObjectCollection<T> collection)
@@ -127,7 +177,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
 
             collection.ClearEntries();
             
-            _modelKeys.SetDirty(true);
+            SetDirty();
         }
 
         private void Remove(KeyObjectCollection<T> collection, KeyObjectEntry<T> entry)
@@ -136,7 +186,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             
             collection.RemoveEntry(entry);
             
-            _modelKeys.SetDirty(true);
+            SetDirty();
         }
         
         private void DrawSearchBar()
@@ -145,10 +195,16 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             
             if (textSearch != _modelKeys.Text)
             {
-                _modelKeys.SetDirty(true);
+                SetDirty();
             }
 
             _modelKeys.SetTextSearch(textSearch);
+        }
+        
+        private void SetDirty()
+        {
+            _modelKeys.SetDirty(true);
+            _isSaveDirty = true;
         }
     }
 }

@@ -2,11 +2,10 @@ using EgorLin.Keys.Editor.Widgets.Base;
 
 namespace EgorLin.Keys.Editor.Widgets.Items
 {
-	public static class KeyWidgetItemCopyButton
+	public static class KeyWidgetItemRenameButton
 	{
-		public const string TextDebug = "Copied: {0}";
-		private const string TextLabel = "📋";
-		private const string TextTooltip = "Copy tag name";
+		private const string TextLabel = "✏";
+		private const string TextTooltip = "Rename tag name";
 
 		public static bool Draw()
 		{

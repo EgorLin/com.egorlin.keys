@@ -11,7 +11,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
 		public const float IconPadding = 6f;
 		
 		// Colors
-		public static readonly Color ColorBackgroundEmpty = new(0.25f, 0.25f, 0.25f, 0.5f);
+		public static readonly Color ColorBackgroundEmpty = new(0.4f, 0.25f, 0.25f, 0.5f);
 		public static readonly Color ColorBackgroundSet = new(0.2f, 0.3f, 0.4f, 0.3f);
 		public static readonly Color ColorTextEmpty = new(0.6f, 0.6f, 0.6f);
 		public static readonly Color ColorTextSet = new(0.9f, 0.9f, 0.9f);

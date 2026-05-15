@@ -46,7 +46,7 @@ namespace EgorLin.Keys.Collections.Data
 
 		public void AddPath(string tag)
 		{
-			var value = KeyTag.CreateWithoutId(tag);
+			var value = KeyTag.Create(tag);
 			
 			path.Values.Add(value);
 		}

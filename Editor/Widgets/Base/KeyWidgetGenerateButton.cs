@@ -2,21 +2,16 @@ using UnityEngine;
 
 namespace EgorLin.Keys.Editor.Widgets.Base
 {
-	public class KeyWidgetSaveButton
+	public class KeyWidgetGenerateButton
 	{
-		private static readonly Color Color = new(0.8f, 0.4f, 0.4f);
+		private static readonly Color Color = new(0.5f, 0.5f, 0.7f);
 
-		private const string TextLabel = "💾 Save";
+		private const string TextLabel = "💻 Generate Keys";
 		
 		private static readonly GUILayoutOption OptionHeight = GUILayout.Height(30);
 		
-		public static bool DrawSaveButton(bool isDirty)
+		public static bool DrawButton()
 		{
-			if (!isDirty)
-			{
-				return false;
-			}
-			
 			var prevColor = GUI.backgroundColor;
 			GUI.backgroundColor = Color;
 			

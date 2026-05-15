@@ -6,10 +6,7 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 {
 	public static class KeyWidgetItemTag
 	{
-		private const string TextLabelTag = "🏷 {0}";
-		private const string TextLabelInvalid = "INVALID";
-		
-		private static readonly Color ColorInvalid = Color.red;
+		private const string TextLabelTag = "{0}";
 		
 		private static readonly GUIStyle Style = new(EditorStyles.label)
 		{

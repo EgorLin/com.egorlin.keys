@@ -49,9 +49,9 @@ namespace EgorLin.Keys.Editor.Widgets.Items
             {
                 var rawResult = drawItem.Invoke(item);
                 
-                if (rawResult.IsRemoveClicked)
+                if (rawResult.IsRemoveClicked || rawResult.IsRenameClicked)
                 {
-                    result = new KeyWidgetItemListResult(true, index);
+                    result = new KeyWidgetItemListResult(rawResult.IsRemoveClicked, rawResult.IsRenameClicked, index);
                 }
 
                 index += 1;
@@ -64,11 +64,13 @@ namespace EgorLin.Keys.Editor.Widgets.Items
     public struct KeyWidgetItemListResult
     {
         public readonly bool HasItemToRemove;
+        public readonly bool HasItemToRename;
         public readonly int Index;
 
-        public KeyWidgetItemListResult(bool hasItemToRemove, int index)
+        public KeyWidgetItemListResult(bool hasItemToRemove, bool hasItemToRename, int index)
         {
             HasItemToRemove = hasItemToRemove;
+            HasItemToRename = hasItemToRename;
             Index = index;
         }
     }

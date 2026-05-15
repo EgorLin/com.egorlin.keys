@@ -46,8 +46,7 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
         
         private static void DrawNewButton(KeyCollectionBase collection)
         {
-            if (KeyWidgetBase.DrawColoredButton(LabelNewButton, TooltipNewButton, 
-                    ColorNewButton, LayoutOptionsNewButton))
+            if (KeyWidgetBase.DrawColoredButton(LabelNewButton, TooltipNewButton, ColorNewButton, LayoutOptionsNewButton))
             {
                 KeyWidgetWindowAddTag.Open(null, collection.AddPath);
             }

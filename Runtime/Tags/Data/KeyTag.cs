@@ -53,10 +53,5 @@ namespace EgorLin.Keys.Tags.Data
 			var id = KeyId.Create(tag);
 			return new KeyTag(tag, id);
 		}
-
-		public static KeyTag CreateWithoutId(string tag)
-		{
-			return new KeyTag(tag, KeyId.Empty);
-		}
 	}
 }

@@ -22,23 +22,23 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 	        {
 		        EditorGUILayout.BeginHorizontal();
 		        
+		        var isRemoveClicked = KeyWidgetRemoveButton.Draw();
+		        var isRenameClicked = KeyWidgetItemRenameButton.Draw();
+		        DrawCopyButton(textTag);
+		        
 		        KeyWidgetItemTag.Draw(textTag);
 		        
 		        GUILayout.FlexibleSpace();
 		        
 		        KeyWidgetItemHash.Draw(entry.Key.Id.Hash);
-
-		        DrawCopyButton(textTag);
 		        
 		        var valueRect = EditorGUILayout.GetControlRect(GUILayout.Width(ValueFieldWidth),
 			        GUILayout.Height(EditorGUIUtility.singleLineHeight));
 		        entry.Value = DrawObjectField(valueRect, entry.Value);
 		        
-		        var isRemoveClicked = KeyWidgetRemoveButton.Draw();
-		        
 		        EditorGUILayout.EndHorizontal();
 		        
-		        return new KeyWidgetItemRawResult(isRemoveClicked);
+		        return new KeyWidgetItemRawResult(isRemoveClicked, isRenameClicked);
 	        }
 	        else
 	        {
@@ -46,14 +46,15 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 		        
 		        EditorGUILayout.BeginHorizontal();
 		        
+		        var isRemoveClicked = KeyWidgetRemoveButton.Draw();
+		        var isRenameClicked = KeyWidgetItemRenameButton.Draw();
+		        DrawCopyButton(textTag);
+		        
 		        KeyWidgetItemTag.Draw(textTag);
+		        
 		        GUILayout.FlexibleSpace();
 		        
 		        KeyWidgetItemHash.Draw(entry.Key.Id.Hash);
-
-		        DrawCopyButton(textTag);
-		        
-		        var isRemoveClicked = KeyWidgetRemoveButton.Draw();
 		        
 		        EditorGUILayout.EndHorizontal();
         
@@ -61,7 +62,7 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 		        
 		        EditorGUILayout.EndVertical();
 		        
-		        return new KeyWidgetItemRawResult(isRemoveClicked);
+		        return new KeyWidgetItemRawResult(isRemoveClicked, isRenameClicked);
 	        }
         }
         
