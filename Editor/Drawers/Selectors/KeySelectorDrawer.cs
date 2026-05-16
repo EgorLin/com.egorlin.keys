@@ -3,6 +3,7 @@ using EgorLin.Keys.Backend.Indexers.Collection;
 using EgorLin.Keys.Backend.Indexers.Items;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Ids;
+using EgorLin.Keys.Owners;
 using EgorLin.Keys.Selectors.Assets;
 using Sirenix.OdinInspector.Editor;
 using UnityEditor;
@@ -32,7 +33,35 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             var selector = ValueEntry.SmartValue;
             var keyId = selector.KeyId;
             
+            DrawCollectionSourceControls(selector);
+            
             DrawCompactSelector(selector, keyId);
+        }
+        
+        private void DrawCollectionSourceControls(KeySelector selector)
+        {
+            EditorGUI.BeginChangeCheck();
+
+            var toggle = EditorGUILayout.Toggle("Specific Collection", selector.isSpecificCollection);
+            
+            var asset = selector.specificCollection as Object;
+            
+            if (toggle)
+            {
+                asset = EditorGUILayout.ObjectField(
+                    "Collection",
+                    asset,
+                    typeof(IKeyCollectionContainer),
+                    false
+                );
+            }
+
+            if (EditorGUI.EndChangeCheck())
+            {
+                selector.isSpecificCollection = toggle;
+                selector.specificCollection = asset;
+                ValueEntry.SmartValue = selector;
+            }
         }
 
         private void DrawCompactSelector(KeySelector selector, KeyId keyId)
@@ -88,6 +117,11 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
         private string GetFullPathWithKey(KeyId keyId)
         {
             var collection = KeyCollectionOwnerIndexer.Get(keyId);
+
+            if (collection == null)
+            {
+                return $"INVALID {keyId.Hash} id ";
+            }
             
             var parts = new List<string>();
             
@@ -106,19 +140,20 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
         {
             var e = Event.current;
             
-            if (rect.Contains(e.mousePosition))
+            if (!rect.Contains(e.mousePosition)) return;
+
+            if (e.type == EventType.MouseDown && e.button == 0)
             {
-                if (e.type == EventType.MouseDown && e.button == 0)
-                {
-                    KeyWidgetWindowSelectorSearch.Open(selector.SetKey);
-                    e.Use();
-                }
+                var container = selector.isSpecificCollection ? selector.specificCollection as IKeyCollectionContainer : null;
+                KeyWidgetWindowSelectorSearch.Open(selector.SetKey, container);
                 
-                if (e.type == EventType.MouseDown && e.button == 1)
-                {
-                    ShowContextMenu(selector, keyId);
-                    e.Use();
-                }
+                e.Use();
+            }
+
+            if (e.type == EventType.MouseDown && e.button == 1)
+            {
+                ShowContextMenu(selector, keyId);
+                e.Use();
             }
         }
         

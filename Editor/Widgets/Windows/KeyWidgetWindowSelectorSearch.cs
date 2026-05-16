@@ -4,6 +4,7 @@ using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Backend.Indexers.Collection;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Ids;
+using EgorLin.Keys.Owners;
 using EgorLin.Keys.Tags.Data;
 using EgorLin.Keys.Utils;
 using EgorLin.Pools;
@@ -19,8 +20,10 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         private readonly List<ModelKeyCollectionEntrySearch> _results = new();
         private Action<KeyId> _onSelected;
         private readonly Dictionary<KeyId, int> _keyUsageCache = new();
+        
+        private IKeyCollectionContainer _collectionFilter;
      
-        public static void Open(Action<KeyId> onSelected)
+        public static void Open(Action<KeyId> onSelected, IKeyCollectionContainer collectionFilter = null)
         {
             var window = CreateInstance<KeyWidgetWindowSelectorSearch>();
             window.titleContent = new GUIContent(KeyWidgetWindowSelectorSearchStyles.WindowTitle);
@@ -31,11 +34,12 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
                 KeyWidgetWindowSelectorSearchStyles.WindowHeight
             );
             window._onSelected = onSelected;
+            window._collectionFilter = collectionFilter;
             window.ShowUtility();
             
             var resultsBuffer = PoolFastList<ModelKeyCollectionEntrySearch>.Spawn();
 
-            FillCollections(resultsBuffer);
+            FillCollections(resultsBuffer, collectionFilter);
             
             CopyResults(window._results, resultsBuffer);
             PoolFastList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
@@ -295,17 +299,30 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             Close();
         }
      
-        private static void FillCollections(FastList<ModelKeyCollectionEntrySearch> buffer)
+        private static void FillCollections(FastList<ModelKeyCollectionEntrySearch> buffer, IKeyCollectionContainer filter = null)
         {
-            var collectionOwners = KeyCollectionOwnerIndexer.GetAllAssets();
-
-            foreach (var collection in collectionOwners)
+            if (filter != null)
             {
-                buffer.Add(new ModelKeyCollectionEntrySearch
+                foreach (var collection in filter.GetCollections())
                 {
-                    Paths = new List<KeyTag>(collection.GetAllPaths()),
-                    Keys = new List<KeyTag>(collection.GetAllKeys()),
-                });
+                    buffer.Add(new ModelKeyCollectionEntrySearch
+                    {
+                        Paths = new List<KeyTag>(collection.GetAllPaths()),
+                        Keys  = new List<KeyTag>(collection.GetAllKeys()),
+                    });
+                }
+            }
+            else
+            {
+                var owners = KeyCollectionOwnerIndexer.GetAllAssets();
+                foreach (var collection in owners)
+                {
+                    buffer.Add(new ModelKeyCollectionEntrySearch
+                    {
+                        Paths = new List<KeyTag>(collection.GetAllPaths()),
+                        Keys  = new List<KeyTag>(collection.GetAllKeys()),
+                    });
+                }
             }
         }
      
