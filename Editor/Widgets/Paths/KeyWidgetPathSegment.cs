@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Dialogs;
@@ -43,21 +44,21 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 		private const string MenuItemRemoveThisAndFollowing = "🗑 Remove";
 		
         
-		public static void Draw(List<KeyTag> pathNodes, int depthIndex)
+		public static void Draw(List<KeyTag> pathNodes, int depthIndex, Action onDirty)
 		{
 			var tag = pathNodes[depthIndex];
             
 			if (tag.IsEmpty())
 			{
-				DrawInvalidSegment(pathNodes, depthIndex);
+				DrawInvalidSegment(pathNodes, depthIndex, onDirty);
 				
 				return;
 			}
 
-			DrawSegment(pathNodes, depthIndex, tag);
+			DrawSegment(pathNodes, depthIndex, tag, onDirty);
 		}
 
-		private static void DrawSegment(List<KeyTag> pathNodes, int depthIndex, KeyTag tag)
+		private static void DrawSegment(List<KeyTag> pathNodes, int depthIndex, KeyTag tag, Action onDirty)
 		{
 			var color = GetDepthColor(depthIndex);
 			
@@ -66,20 +67,20 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 			if (KeyWidgetBase.DrawColoredButton(tag.Value, tooltip, color, StyleTooltip, 
 				    LayoutOptionsTooltip))
 			{
-				ShowDropdown(pathNodes, depthIndex, tag);
+				ShowDropdown(pathNodes, depthIndex, tag, onDirty);
 			}
 		}
 
-		private static void DrawInvalidSegment(List<KeyTag> pathNodes, int depthIndex)
+		private static void DrawInvalidSegment(List<KeyTag> pathNodes, int depthIndex, Action onDirty)
 		{
 			if (KeyWidgetBase.DrawColoredButton(LabelInvalidSegment, TooltipInvalidSegment, 
 				    ColorInvalidSegment, LayoutOptionsInvalidSegment))
 			{
-				ShowDropdown(pathNodes, depthIndex, KeyTag.CreateEmpty());
+				ShowDropdown(pathNodes, depthIndex, KeyTag.CreateEmpty(), onDirty);
 			}
 		}
 		
-		private static void ShowDropdown(List<KeyTag> pathNodes, int indexDepth, KeyTag tag)
+		private static void ShowDropdown(List<KeyTag> pathNodes, int indexDepth, KeyTag tag, Action onDirty)
 		{
 			var menu = new GenericMenu();
 
@@ -91,6 +92,8 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 
 					node.Value = tagValue;
 					pathNodes[indexDepth] = node;
+
+					onDirty();
 				});
 			});
 
@@ -109,6 +112,8 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 			menu.AddItem(new GUIContent(MenuItemRemoveThisAndFollowing), false, () =>
 			{
 				RemovePathSegments(pathNodes, indexDepth);
+
+				onDirty();
 			});
 
 			menu.ShowAsContext();

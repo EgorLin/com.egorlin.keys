@@ -1,3 +1,4 @@
+using System;
 using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Windows;
@@ -22,13 +23,13 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
             GUILayout.Height(22)
         };
         
-        public static void DrawPath(KeyCollectionBase collection)
+        public static void DrawPath(KeyCollectionBase collection, Action onDirty)
         {
             EditorGUILayout.BeginHorizontal();
             
             for (var indexDepth = 0; indexDepth < collection.Paths.Count; indexDepth++)
             {
-                KeyWidgetPathSegment.Draw(collection.Paths, indexDepth);
+                KeyWidgetPathSegment.Draw(collection.Paths, indexDepth, onDirty);
                 
                 if (indexDepth < collection.Paths.Count - 1)
                 {
@@ -38,17 +39,21 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 
             if (collection.Paths.Count < KeyPathDepth.MaxPathDepth)
             {
-                DrawNewButton(collection);
+                DrawNewButton(collection, onDirty);
             }
             
             EditorGUILayout.EndHorizontal();
         }
         
-        private static void DrawNewButton(KeyCollectionBase collection)
+        private static void DrawNewButton(KeyCollectionBase collection, Action onDirty)
         {
             if (KeyWidgetBase.DrawColoredButton(LabelNewButton, TooltipNewButton, ColorNewButton, LayoutOptionsNewButton))
             {
-                KeyWidgetWindowAddTag.Open(null, collection.AddPath);
+                KeyWidgetWindowAddTag.Open(null, (value) =>
+                {
+                    collection.AddPath(value);
+                    onDirty();
+                });
             }
         }
 	}

@@ -47,7 +47,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                 KeyCollectionCodeGenerator.Generate();
             }
             
-            KeyWidgetPathRoot.Draw(collection, _modelPath);
+            KeyWidgetPathRoot.Draw(collection, _modelPath, SetDirty);
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.Widgets.Base;
@@ -8,7 +9,7 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 {
 	public static class KeyWidgetPathRoot
 	{
-		public static void Draw(KeyCollectionBase collection, ModelKeyWidgetPathRoot model)
+		public static void Draw(KeyCollectionBase collection, ModelKeyWidgetPathRoot model, Action onDirty)
 		{
 			EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -18,7 +19,7 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
             
 			KeyWidgetBase.DrawSpaceSmall();
             
-			KeyWidgetPathList.DrawPath(collection);
+			KeyWidgetPathList.DrawPath(collection, onDirty);
             
 			EditorGUILayout.EndVertical();
 		}
