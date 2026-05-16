@@ -52,7 +52,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                     "Collection",
                     asset,
                     typeof(IKeyCollectionContainer),
-                    false
+                   true 
                 );
             }
 
