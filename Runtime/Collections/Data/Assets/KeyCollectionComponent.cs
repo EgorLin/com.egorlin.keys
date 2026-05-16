@@ -5,7 +5,7 @@ using Sirenix.Serialization;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
-	public abstract class KeyCollectionComponent : KeyCollectionComponentBase
+	public class KeyCollectionComponent : KeyCollectionComponentBase
 	{
         [OdinSerialize] [NonSerialized] public KeyCollection Collection = new();
 

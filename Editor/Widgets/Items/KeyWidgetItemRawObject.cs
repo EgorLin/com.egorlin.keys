@@ -71,9 +71,11 @@ namespace EgorLin.Keys.Editor.Widgets.Items
 	        var tree = GetOrCreateTree(current, entryId);
 	        ((ObjectWrapper<T>)tree.WeakTargets[0]).Value = current;
     
+#pragma warning disable CS0618 // Type or member is obsolete
 	        InspectorUtilities.BeginDrawPropertyTree(tree, false);
 	        tree.Draw(false);
 	        InspectorUtilities.EndDrawPropertyTree(tree);
+#pragma warning restore CS0618 // Type or member is obsolete
 	        tree.ApplyChanges();
     
 	        return ((ObjectWrapper<T>)tree.WeakTargets[0]).Value;
