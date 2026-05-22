@@ -50,7 +50,7 @@ namespace EgorLin.Keys.Tags.Data
 
 		public static KeyTag Create(string tag)
 		{
-			var id = KeyId.Create(tag);
+			var id = KeyId.Create();
 			return new KeyTag(tag, id);
 		}
 	}
