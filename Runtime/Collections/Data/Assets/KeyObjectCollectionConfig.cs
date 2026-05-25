@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Owners;
 using Sirenix.Serialization;
 
@@ -12,6 +13,11 @@ namespace EgorLin.Keys.Collections.Data.Assets
 		public override IEnumerable<IKeyCollectionOwner> GetCollections()
 		{
 			yield return Collection;
+		}
+		
+		public T GetValue(int id)
+		{
+			return Collection.ValuesMap.GetValueByKey(id);
 		}
 	}
 }
