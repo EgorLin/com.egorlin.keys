@@ -11,7 +11,8 @@ using UnityEngine;
 
 namespace EgorLin.Keys.Editor.Drawers.Selectors
 {
-    public class KeySelectorDrawer : OdinValueDrawer<KeySelector>
+    [CustomPropertyDrawer(typeof(KeySelector))]
+    public class KeySelectorDrawer : PropertyDrawer
     {
         private GUIStyle _headerLabelStyle;
         private GUIStyle _badgeStyle;
@@ -22,48 +23,62 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
         private GUIStyle _collectionNameStyle;
         private GUIStyle _collectionNameAssignedStyle;
 
-        // Track hover state for the clear button
-        private bool _clearHovered;
+        private bool _stylesInitialized;
 
-        protected override void Initialize()
+        private void EnsureStyles()
         {
-            base.Initialize();
-            _headerLabelStyle             = KeySelectorDrawerStyles.CreateHeaderLabelStyle();
-            _badgeStyle                   = KeySelectorDrawerStyles.CreateBadgeStyle();
-            _sourceLabelStyle             = KeySelectorDrawerStyles.CreateSourceLabelStyle();
-            _keyPathStyle                 = KeySelectorDrawerStyles.CreateKeyPathStyle();
-            _keyPathEmptyStyle            = KeySelectorDrawerStyles.CreateKeyPathEmptyStyle();
-            _iconStyle                    = KeySelectorDrawerStyles.CreateIconStyle();
-            _collectionNameStyle          = KeySelectorDrawerStyles.CreateCollectionNameStyle();
-            _collectionNameAssignedStyle  = KeySelectorDrawerStyles.CreateCollectionNameAssignedStyle();
+            if (_stylesInitialized) return;
+            _stylesInitialized           = true;
+            _headerLabelStyle            = KeySelectorDrawerStyles.CreateHeaderLabelStyle();
+            _badgeStyle                  = KeySelectorDrawerStyles.CreateBadgeStyle();
+            _sourceLabelStyle            = KeySelectorDrawerStyles.CreateSourceLabelStyle();
+            _keyPathStyle                = KeySelectorDrawerStyles.CreateKeyPathStyle();
+            _keyPathEmptyStyle           = KeySelectorDrawerStyles.CreateKeyPathEmptyStyle();
+            _iconStyle                   = KeySelectorDrawerStyles.CreateIconStyle();
+            _collectionNameStyle         = KeySelectorDrawerStyles.CreateCollectionNameStyle();
+            _collectionNameAssignedStyle = KeySelectorDrawerStyles.CreateCollectionNameAssignedStyle();
         }
 
-        protected override void DrawPropertyLayout(GUIContent label)
+        // ─── Height ───────────────────────────────────────────────────────────────
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            var selector = ValueEntry.SmartValue;
-            var keyId    = selector.KeyId;
+            return KeySelectorDrawerStyles.GroupHeaderHeight
+                 + 1f  // header border
+                 + KeySelectorDrawerStyles.BodyPadding
+                 + KeySelectorDrawerStyles.SourceRowHeight
+                 + KeySelectorDrawerStyles.RowGap
+                 + KeySelectorDrawerStyles.KeyRowHeight
+                 + KeySelectorDrawerStyles.BodyPadding;
+        }
 
-            float totalHeight =
-                KeySelectorDrawerStyles.GroupHeaderHeight +
-                1f + // header border
-                KeySelectorDrawerStyles.BodyPadding +
-                KeySelectorDrawerStyles.SourceRowHeight +
-                KeySelectorDrawerStyles.RowGap +
-                KeySelectorDrawerStyles.KeyRowHeight +
-                KeySelectorDrawerStyles.BodyPadding;
+        // ─── Main draw ────────────────────────────────────────────────────────────
 
-            var groupRect = EditorGUILayout.GetControlRect(false, totalHeight);
+        public override void OnGUI(Rect groupRect, SerializedProperty property, GUIContent label)
+        {
+            EnsureStyles();
+
+            // Resolve child properties
+            var propIsSpecific  = property.FindPropertyRelative("isSpecificCollection");
+            var propCollection  = property.FindPropertyRelative("specificCollection");
+            // In OnGUI, replace the single propKeyHash line with:
+            var propKeyWindow = property.FindPropertyRelative("keyWindow");
+            var propKeyHash   = propKeyWindow.FindPropertyRelative("Hash");
+
+            var keyId = KeyId.Create(propKeyHash.intValue); // int, not long
 
             DrawGroupBackground(groupRect);
             DrawAccentBorder(groupRect);
             DrawGroupBorder(groupRect);
 
+            // Header
             var headerRect = new Rect(
                 groupRect.x, groupRect.y,
                 groupRect.width, KeySelectorDrawerStyles.GroupHeaderHeight);
 
             DrawHeader(headerRect, label, keyId);
 
+            // Body layout
             float bodyY = headerRect.yMax + 1f;
             float bodyX = groupRect.x + KeySelectorDrawerStyles.AccentBorderWidth;
             float bodyW = groupRect.width - KeySelectorDrawerStyles.AccentBorderWidth;
@@ -80,21 +95,18 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 sourceRect.width,
                 KeySelectorDrawerStyles.KeyRowHeight);
 
-            bool changed = DrawSourceRow(sourceRect, selector);
-            DrawKeyRow(keyRect, selector, keyId);
+            EditorGUI.BeginChangeCheck();
+            DrawSourceRow(sourceRect, propIsSpecific, propCollection);
+            if (EditorGUI.EndChangeCheck())
+                property.serializedObject.ApplyModifiedProperties();
 
-            if (changed)
-                ValueEntry.SmartValue = selector;
+            DrawKeyRow(keyRect, propIsSpecific, propCollection, propKeyHash, keyId);
         }
-
-        // ─── Group chrome ────────────────────────────────────────────
 
         private void DrawGroupBackground(Rect rect)
         {
-            // Body
             EditorGUI.DrawRect(rect, KeySelectorDrawerStyles.ColorBodyBackground);
 
-            // Header overlay
             var headerRect = new Rect(rect.x, rect.y,
                 rect.width, KeySelectorDrawerStyles.GroupHeaderHeight);
             EditorGUI.DrawRect(headerRect, KeySelectorDrawerStyles.ColorHeaderBackground);
@@ -110,8 +122,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
 
         private void DrawGroupBorder(Rect rect)
         {
-            // 1px border simulation via outline rects (EditorGUI has no outline primitive)
-            float t = 1f;
+            const float t = 1f;
             EditorGUI.DrawRect(new Rect(rect.x, rect.y, rect.width, t),
                 KeySelectorDrawerStyles.ColorGroupBorder);
             EditorGUI.DrawRect(new Rect(rect.x, rect.yMax - t, rect.width, t),
@@ -121,17 +132,16 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             EditorGUI.DrawRect(new Rect(rect.xMax - t, rect.y, t, rect.height),
                 KeySelectorDrawerStyles.ColorGroupBorder);
 
-            // Header bottom divider
+            // Header divider
             EditorGUI.DrawRect(
                 new Rect(rect.x, rect.y + KeySelectorDrawerStyles.GroupHeaderHeight, rect.width, t),
                 KeySelectorDrawerStyles.ColorGroupBorder);
         }
 
-        // ─── Header ──────────────────────────────────────────────────
+        // ─── Header ───────────────────────────────────────────────────────────────
 
         private void DrawHeader(Rect rect, GUIContent label, KeyId keyId)
         {
-            // Field name (uppercase via style)
             var labelRect = new Rect(
                 rect.x + KeySelectorDrawerStyles.AccentBorderWidth + 4f,
                 rect.y,
@@ -144,76 +154,59 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
 
             GUI.Label(labelRect, displayLabel, _headerLabelStyle);
 
-            // Status badge
-            bool isSet       = !keyId.IsEmpty;
-            var  badgeText   = isSet
-                ? KeySelectorDrawerStyles.LabelAssigned
-                : KeySelectorDrawerStyles.LabelUnassigned;
-            var  badgeBgColor = isSet
-                ? KeySelectorDrawerStyles.ColorBadgeSetBg
-                : KeySelectorDrawerStyles.ColorBadgeEmptyBg;
-            var  badgeTextColor = isSet
-                ? KeySelectorDrawerStyles.ColorBadgeSetText
-                : KeySelectorDrawerStyles.ColorBadgeEmptyText;
+            bool isSet        = !keyId.IsEmpty;
+            var  badgeText    = isSet ? KeySelectorDrawerStyles.LabelAssigned : KeySelectorDrawerStyles.LabelUnassigned;
+            var  badgeBgColor = isSet ? KeySelectorDrawerStyles.ColorBadgeSetBg : KeySelectorDrawerStyles.ColorBadgeEmptyBg;
+            var  badgeTxColor = isSet ? KeySelectorDrawerStyles.ColorBadgeSetText : KeySelectorDrawerStyles.ColorBadgeEmptyText;
 
-            float badgeW  = 62f;
-            float badgeH  = 14f;
-            var   badgeRect = new Rect(
+            const float badgeW = 62f, badgeH = 14f;
+            var badgeRect = new Rect(
                 rect.xMax - badgeW - 6f,
                 rect.y + (rect.height - badgeH) / 2f,
                 badgeW, badgeH);
 
             EditorGUI.DrawRect(badgeRect, badgeBgColor);
-            _badgeStyle.normal.textColor = badgeTextColor;
+            _badgeStyle.normal.textColor = badgeTxColor;
             GUI.Label(badgeRect, badgeText, _badgeStyle);
         }
 
-        // ─── Source row ───────────────────────────────────────────────
+        // ─── Source row ───────────────────────────────────────────────────────────
 
-        private bool DrawSourceRow(Rect rect, KeySelector selector)
+        private void DrawSourceRow(Rect rect,
+            SerializedProperty propIsSpecific,
+            SerializedProperty propCollection)
         {
-            bool changed = false;
-
             // "From" label
-            float fromW    = 32f;
-            var   fromRect = new Rect(rect.x, rect.y, fromW, rect.height);
-            GUI.Label(fromRect, KeySelectorDrawerStyles.LabelFrom, _sourceLabelStyle);
+            const float fromW = 32f;
+            GUI.Label(new Rect(rect.x, rect.y, fromW, rect.height),
+                KeySelectorDrawerStyles.LabelFrom, _sourceLabelStyle);
 
             // Toggle pill
-            float toggleX    = fromRect.xMax + 4f;
+            float toggleX    = rect.x + fromW + 4f;
             var   toggleRect = new Rect(
                 toggleX,
                 rect.y + (rect.height - KeySelectorDrawerStyles.ToggleHeight) / 2f,
                 KeySelectorDrawerStyles.ToggleWidth,
                 KeySelectorDrawerStyles.ToggleHeight);
 
-            bool newToggle = DrawTogglePill(toggleRect, selector.isSpecificCollection);
-            if (newToggle != selector.isSpecificCollection)
-            {
-                selector.isSpecificCollection = newToggle;
-                changed = true;
-            }
+            bool newToggle = DrawTogglePill(toggleRect, propIsSpecific.boolValue);
+            if (newToggle != propIsSpecific.boolValue)
+                propIsSpecific.boolValue = newToggle;
 
             // Collection object field
             float fieldX   = toggleRect.xMax + 6f;
             var   fieldRect = new Rect(fieldX, rect.y, rect.xMax - fieldX, rect.height);
 
-            if (selector.isSpecificCollection)
+            if (propIsSpecific.boolValue)
             {
-                EditorGUI.BeginChangeCheck();
-                var newAsset = DrawCollectionField(fieldRect, selector.specificCollection as Object, false);
-                if (EditorGUI.EndChangeCheck())
-                {
-                    selector.specificCollection = newAsset;
-                    changed = true;
-                }
+                var newAsset = DrawCollectionField(fieldRect, propCollection.objectReferenceValue, false);
+                if (newAsset != propCollection.objectReferenceValue)
+                    propCollection.objectReferenceValue = newAsset;
             }
             else
             {
                 DrawCollectionField(fieldRect, null, true);
             }
-
-            return changed;
         }
 
         private bool DrawTogglePill(Rect rect, bool isOn)
@@ -259,54 +252,51 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 return null;
             }
 
-            using var _ = new EditorGUI.DisabledScope(false);
+            // Temporarily strip the default ObjectField chrome
+            var prevSkin      = EditorStyles.objectField.normal.background;
+            var prevActive    = EditorStyles.objectField.active.background;
+            var prevFocused   = EditorStyles.objectField.focused.background;
+            var prevTextColor = EditorStyles.objectField.normal.textColor;
 
-            var prevSkin       = EditorStyles.objectField.normal.background;
-            var prevActive     = EditorStyles.objectField.active.background;
-            var prevFocused    = EditorStyles.objectField.focused.background;
-            var prevTextColor  = EditorStyles.objectField.normal.textColor;
-
-            EditorStyles.objectField.normal.background   = null;
-            EditorStyles.objectField.active.background   = null;
-            EditorStyles.objectField.focused.background  = null;
-            EditorStyles.objectField.normal.textColor    = current != null
+            EditorStyles.objectField.normal.background  = null;
+            EditorStyles.objectField.active.background  = null;
+            EditorStyles.objectField.focused.background = null;
+            EditorStyles.objectField.normal.textColor   = current != null
                 ? KeySelectorDrawerStyles.ColorTextPrimary
                 : KeySelectorDrawerStyles.ColorTextSecondary;
-            EditorStyles.objectField.fontSize            = 11;
-            EditorStyles.objectField.padding             = new RectOffset(6, 4, 0, 0);
+            EditorStyles.objectField.fontSize  = 11;
+            EditorStyles.objectField.padding   = new RectOffset(6, 4, 0, 0);
 
             var result = EditorGUI.ObjectField(rect, current, typeof(Object), true);
 
-            
-            EditorStyles.objectField.normal.background   = prevSkin;
-            EditorStyles.objectField.active.background   = prevActive;
-            EditorStyles.objectField.focused.background  = prevFocused;
-            EditorStyles.objectField.normal.textColor    = prevTextColor;
+            EditorStyles.objectField.normal.background  = prevSkin;
+            EditorStyles.objectField.active.background  = prevActive;
+            EditorStyles.objectField.focused.background = prevFocused;
+            EditorStyles.objectField.normal.textColor   = prevTextColor;
 
             return result;
         }
 
-        // ─── Key row ──────────────────────────────────────────────────
+        // ─── Key row ──────────────────────────────────────────────────────────────
 
-        private void DrawKeyRow(Rect rect, KeySelector selector, KeyId keyId)
+        private void DrawKeyRow(Rect rect,
+            SerializedProperty propIsSpecific,
+            SerializedProperty propCollection,
+            SerializedProperty propKeyHash,
+            KeyId keyId)
         {
-            bool  isEmpty = keyId.IsEmpty;
-            var   bgColor = KeySelectorDrawerStyles.ColorRowBackground;
+            bool isEmpty = keyId.IsEmpty;
 
-            EditorGUI.DrawRect(rect, bgColor);
+            EditorGUI.DrawRect(rect, KeySelectorDrawerStyles.ColorRowBackground);
             DrawThinBorder(rect, KeySelectorDrawerStyles.ColorRowBorder);
 
             // Icon column
-            var iconRect = new Rect(rect.x, rect.y,
-                KeySelectorDrawerStyles.IconColumnWidth, rect.height);
-
+            var iconRect    = new Rect(rect.x, rect.y, KeySelectorDrawerStyles.IconColumnWidth, rect.height);
             var iconBgColor = isEmpty
                 ? KeySelectorDrawerStyles.ColorIconBgEmpty
                 : KeySelectorDrawerStyles.ColorIconBgSet;
 
             EditorGUI.DrawRect(iconRect, iconBgColor);
-
-            // Right border on icon column
             EditorGUI.DrawRect(
                 new Rect(iconRect.xMax - 1f, iconRect.y, 1f, iconRect.height),
                 KeySelectorDrawerStyles.ColorRowBorder);
@@ -319,7 +309,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 isEmpty ? KeySelectorDrawerStyles.IconWarning : KeySelectorDrawerStyles.IconKey,
                 _iconStyle);
 
-            // Clear button (right side)
+            // Clear button
             var clearRect = new Rect(
                 rect.xMax - KeySelectorDrawerStyles.ClearButtonWidth, rect.y,
                 KeySelectorDrawerStyles.ClearButtonWidth, rect.height);
@@ -335,14 +325,13 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             }
             else
             {
-                var path = GetFullPathWithKey(keyId);
-                GUI.Label(pathRect, path, _keyPathStyle);
+                GUI.Label(pathRect, GetFullPathWithKey(keyId), _keyPathStyle);
             }
 
-            // Draw clear button
+            // Clear button interaction
             if (!isEmpty)
             {
-                var e = Event.current;
+                var e       = Event.current;
                 bool hovered = clearRect.Contains(e.mousePosition);
 
                 if (hovered)
@@ -359,40 +348,60 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
 
                 if (e.type == EventType.MouseDown && e.button == 0 && hovered)
                 {
-                    selector.SetKey(KeyId.Empty);
-                    ValueEntry.SmartValue = selector;
-                    GUI.changed = true;
+                    SetKeyHash(propKeyHash, KeyId.Empty);
                     e.Use();
                     return;
                 }
             }
 
-            // Left-click opens selector, right-click opens context menu
-            HandleKeyRowInput(rect, clearRect, selector, keyId);
+            HandleKeyRowInput(rect, clearRect, propIsSpecific, propCollection, propKeyHash, keyId);
         }
 
-        private void HandleKeyRowInput(Rect rect, Rect clearRect, KeySelector selector, KeyId keyId)
+        private void HandleKeyRowInput(Rect rect, Rect clearRect,
+            SerializedProperty propIsSpecific,
+            SerializedProperty propCollection,
+            SerializedProperty propKeyHash,
+            KeyId keyId)
         {
             var e = Event.current;
             if (!rect.Contains(e.mousePosition)) return;
 
             if (e.type == EventType.MouseDown && e.button == 0 && !clearRect.Contains(e.mousePosition))
             {
-                var container = selector.isSpecificCollection
-                    ? selector.specificCollection as IKeyCollectionContainer
+                var container = propIsSpecific.boolValue
+                    ? propCollection.objectReferenceValue as IKeyCollectionContainer
                     : null;
-                KeyWidgetWindowSelectorSearch.Open(selector.SetKey, container);
+
+                // Callback writes back through the SerializedProperty
+                KeyWidgetWindowSelectorSearch.Open(newKeyId =>
+                {
+                    SetKeyHash(propKeyHash, newKeyId);
+                }, container);
+
                 e.Use();
             }
 
             if (e.type == EventType.MouseDown && e.button == 1)
             {
-                ShowContextMenu(selector, keyId);
+                ShowContextMenu(propKeyHash, keyId);
                 e.Use();
             }
         }
 
-        // ─── Shared helpers ───────────────────────────────────────────
+        // ─── Write-back helper ────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Writes a KeyId back through the serialized property and applies.
+        /// Adjust the field access to match your KeyId's actual serialized layout.
+        /// </summary>
+        private static void SetKeyHash(SerializedProperty propKeyHash, KeyId keyId)
+        {
+            propKeyHash.intValue = keyId.Hash; // was .longValue
+            propKeyHash.serializedObject.ApplyModifiedProperties();
+            GUI.changed = true;
+        }
+
+        // ─── Shared helpers ───────────────────────────────────────────────────────
 
         private void DrawThinBorder(Rect rect, Color color)
         {
@@ -403,7 +412,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             EditorGUI.DrawRect(new Rect(rect.xMax - t, rect.y, t, rect.height), color);
         }
 
-        private string GetFullPathWithKey(KeyId keyId)
+        private static string GetFullPathWithKey(KeyId keyId)
         {
             var collection = KeyCollectionOwnerIndexer.Get(keyId);
             if (collection == null)
@@ -413,15 +422,13 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             foreach (var pathNode in collection.GetAllPaths())
                 parts.Add(pathNode.Value);
 
-            var keyValue = KeyItemIndexer.GetValue(keyId);
-            parts.Add(keyValue.Value);
-
+            parts.Add(KeyItemIndexer.GetValue(keyId).Value);
             return string.Join(KeySelectorDrawerStyles.PathArrow, parts);
         }
 
-        // ─── Context menu ─────────────────────────────────────────────
+        // ─── Context menu ─────────────────────────────────────────────────────────
 
-        private void ShowContextMenu(KeySelector selector, KeyId keyId)
+        private void ShowContextMenu(SerializedProperty propKeyHash, KeyId keyId)
         {
             var menu = new GenericMenu();
 
@@ -459,10 +466,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 menu.AddSeparator("");
 
                 menu.AddItem(new GUIContent(KeySelectorDrawerStyles.MenuItemClear), false, () =>
-                {
-                    selector.SetKey(KeyId.Empty);
-                    GUI.changed = true;
-                });
+                    SetKeyHash(propKeyHash, KeyId.Empty));
             }
             else
             {
@@ -472,18 +476,15 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             menu.ShowAsContext();
         }
 
-        private void ShowKeyInfo(KeyId keyId)
+        private static void ShowKeyInfo(KeyId keyId)
         {
             var keyValue = KeyItemIndexer.GetValue(keyId);
-            var message  = string.Format(
-                KeySelectorDrawerStyles.DialogMessageKeyInfo,
-                keyValue.Value,
-                keyId.Hash,
-                GetFullPathWithKey(keyId));
-
             EditorUtility.DisplayDialog(
                 KeySelectorDrawerStyles.DialogTitleKeyInfo,
-                message,
+                string.Format(KeySelectorDrawerStyles.DialogMessageKeyInfo,
+                    keyValue.Value,
+                    keyId.Hash,
+                    GetFullPathWithKey(keyId)),
                 KeySelectorDrawerStyles.DialogButtonOK);
         }
     }

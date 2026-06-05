@@ -1,15 +1,16 @@
 using System.Collections.Generic;
 using EgorLin.Keys.Backend;
 using EgorLin.Keys.Owners;
-using Sirenix.OdinInspector;
+#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
+#endif
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
 	[ExecuteInEditMode]
-	public abstract class KeyCollectionComponentBase : SerializedMonoBehaviour, IKeyCollectionContainer
+	public abstract class KeyCollectionComponentBase : MonoBehaviour, IKeyCollectionContainer
 	{
 		public abstract IEnumerable<IKeyCollectionOwner> GetCollections();
 		

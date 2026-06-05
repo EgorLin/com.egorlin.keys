@@ -3,16 +3,12 @@ using System.Collections.Generic;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Owners;
 using EgorLin.Keys.Tags.Data;
-using Sirenix.OdinInspector;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace EgorLin.Keys.Collections.Data
 {
 	[Serializable]
-	[HideLabel]
-	[HideReferenceObjectPicker]
-	[InlineProperty]
 	public abstract class KeyCollectionBase : IKeyCollectionOwner, ISerializationCallbackReceiver
 	{
 		[SerializeField] protected KeyTagValues path;
@@ -70,6 +66,7 @@ namespace EgorLin.Keys.Collections.Data
 		{
 			this.owner = owner;
 		}
+		
 		public void OnBeforeSerialize()
 		{
 		}
@@ -88,12 +85,10 @@ namespace EgorLin.Keys.Collections.Data
 
 		public abstract IEnumerable<KeyTag> GetAllKeys();
 		public abstract KeyTag GetKeyById(KeyId id);
+		public abstract KeyTag GetKeyByIdValue(KeyId id);
 		protected abstract void InitializeInternal();
-
 		protected abstract KeyTag GetKey(int index);
-
 		protected abstract void SetKey(KeyTag key, int index);
-
 		protected abstract int GetKeysCount();
 
 	}

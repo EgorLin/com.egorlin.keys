@@ -4,6 +4,7 @@ using EgorLin.Keys.Base.Commands;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.CodeGeneration;
+using EgorLin.Keys.Editor.Drawers.Utils;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Dialogs;
 using EgorLin.Keys.Editor.Widgets.Items;
@@ -11,156 +12,176 @@ using EgorLin.Keys.Editor.Widgets.Paths;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Tags.Data;
 using EgorLin.Pools;
-using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
 namespace EgorLin.Keys.Editor.Drawers.Collections
 {
-    public class KeyCollectionDrawer : OdinValueDrawer<KeyCollection>
+    [CustomPropertyDrawer(typeof(KeyCollection))]
+    public class KeyCollectionDrawer : PropertyDrawer
     {
-        private readonly ModelKeyWidgetPathRoot _modelPath = new();
-        private readonly ModelKeyItems<KeyTag> _modelKeys = new((item) => item);
-        
-        private bool _isSaveDirty;
-        
-        protected override void DrawPropertyLayout(GUIContent label)
+        private readonly Dictionary<int, DrawerState> _stateMap = new();
+ 
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var collection = ValueEntry.SmartValue;
-            
-            KeyWidgetInfoBox.Draw();
-
-            if (KeyWidgetSaveButton.DrawSaveButton(_isSaveDirty))
+            DrawLayout(property);
+        }
+ 
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) => 0f;
+ 
+        private DrawerState GetState(SerializedProperty property)
+        {
+            var id = property.serializedObject.GetHashCode();
+ 
+            if (!_stateMap.TryGetValue(id, out var state))
             {
-                CommandKeyCollectionSaveAsset.Execute(Property);
+                state = new DrawerState();
+                _stateMap[id] = state;
+            }
+ 
+            return state;
+        }
+ 
+        private void DrawLayout(SerializedProperty property)
+        {
+            var state = GetState(property);
+ 
+            var collection = GetCollection(property);
+ 
+            if (collection == null)
+            {
+                EditorGUILayout.HelpBox("Could not resolve KeyCollection.", MessageType.Error);
+                return;
+            }
+ 
+            KeyWidgetInfoBox.Draw();
+ 
+            if (KeyWidgetSaveButton.DrawSaveButton(state.IsSaveDirty))
+            {
+                var owner = property.serializedObject.targetObject;
+                CommandKeyCollectionSaveAsset.Execute(owner);
+ 
                 EditorApplication.delayCall += () =>
                 {
-                    _isSaveDirty = false;
-                    
+                    state.IsSaveDirty = false;
                     AssetDatabase.Refresh();
                     KeysBackend.Rebuild();
                 };
             }
-
+ 
             if (KeyWidgetGenerateButton.DrawButton())
             {
                 KeyCollectionCodeGenerator.Generate();
             }
-            
-            KeyWidgetPathRoot.Draw(collection, _modelPath, SetDirty);
-
+ 
+            KeyWidgetPathRoot.Draw(collection, state.ModelPath, () => SetDirty(state));
+ 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
+ 
             if (KeyWidgetItemHeader.Draw(collection.Keys.Count))
             {
-                Clear(collection.Keys);
+                Clear(collection.Keys, state);
             }
-
+ 
             KeyWidgetBase.DrawSpaceSmall();
-            
-            DrawSearchBar();
-            
+            DrawSearchBar(collection.Keys, state);
             KeyWidgetBase.DrawSpaceSmall();
-
+ 
             if (KeyWidgetItemAddButton.Draw())
             {
-                OpenAdd(collection.Keys);
+                OpenAdd(collection.Keys, state);
             }
-
+ 
             KeyWidgetBase.DrawSpaceSmall();
-
-            if (_modelKeys.IsDirty)
+ 
+            if (state.ModelKeys.IsDirty)
             {
-                CommandKeyItemUpdateFilteredItems.Execute(collection.Keys, _modelKeys);
-
-                _modelKeys.SetDirty(false);
+                CommandKeyItemUpdateFilteredItems.Execute(collection.Keys, state.ModelKeys);
+                state.ModelKeys.SetDirty(false);
             }
-
-            DrawList(collection.Keys);
-
+ 
+            DrawList(collection.Keys, state);
+ 
             EditorGUILayout.EndVertical();
         }
-        
-        private void DrawSearchBar()
+ 
+        private void DrawSearchBar(List<KeyTag> keys, DrawerState state)
         {
-            var textSearch = KeyWidgetItemSearchBar.DrawSearchBar(_modelKeys.Text);
-
-            if (textSearch != _modelKeys.Text)
+            var textSearch = KeyWidgetItemSearchBar.DrawSearchBar(state.ModelKeys.Text);
+ 
+            if (textSearch != state.ModelKeys.Text)
             {
-                SetDirty();
+                SetDirty(state);
             }
-
-            _modelKeys.SetTextSearch(textSearch);
+ 
+            state.ModelKeys.SetTextSearch(textSearch);
         }
-
-        private void DrawList(List<KeyTag> keys)
+ 
+        private void DrawList(List<KeyTag> keys, DrawerState state)
         {
             if (keys.Count == 0)
             {
                 var hasSourceItems = keys.Count != 0;
-                
-                KeyWidgetItemList.DrawEmptyHelpBox(hasSourceItems, _modelKeys.Text);
+                KeyWidgetItemList.DrawEmptyHelpBox(hasSourceItems, state.ModelKeys.Text);
             }
             else
             {
-                var result = KeyWidgetItemList.DrawList(_modelKeys, (keyItem) => KeyWidgetItemRaw.Draw(keyItem, keyItem.Id));
-                
+                var result = KeyWidgetItemList.DrawList(
+                    state.ModelKeys,
+                    keyItem => KeyWidgetItemRaw.Draw(keyItem, keyItem.Id));
+ 
                 if (result.HasItemToRemove)
                 {
-                    RemoveItem(keys, _modelKeys.FilteredItems[result.Index]);
+                    RemoveItem(keys, state.ModelKeys.FilteredItems[result.Index], state);
                 }
-
+ 
                 if (result.HasItemToRename)
                 {
-                    Rename(keys, _modelKeys.FilteredItems[result.Index]);
+                    Rename(keys, state.ModelKeys.FilteredItems[result.Index], state);
                 }
             }
         }
-
-        private void Clear(List<KeyTag> keys)
+ 
+        private void Clear(List<KeyTag> keys, DrawerState state)
         {
             if (!KeyWidgetDialogClear.Draw(keys.Count))
             {
                 return;
             }
-
+ 
             keys.Clear();
-            
-            SetDirty();
+            SetDirty(state);
         }
-
-        private void RemoveItem(List<KeyTag> keys, KeyTag key)
+ 
+        private void RemoveItem(List<KeyTag> keys, KeyTag key, DrawerState state)
         {
             keys.Remove(key);
-            
-            SetDirty();
+            SetDirty(state);
         }
-
-        private void Rename(List<KeyTag> keys, KeyTag key)
+ 
+        private void Rename(List<KeyTag> keys, KeyTag key, DrawerState state)
         {
             var lockedTagIds = PoolFastList<string>.Spawn();
-            
+ 
             foreach (var value in keys)
             {
                 lockedTagIds.Add(value.Value);
             }
-            
+ 
             KeyWidgetWindowAddTag.Open(lockedTagIds, tag =>
             {
-                Rename(keys, key, tag);
-                
-                SetDirty();
-
+                RenameInList(keys, key, tag);
+                SetDirty(state);
                 PoolFastList<string>.Recycle(lockedTagIds);
             });
         }
-
-        private static void Rename(List<KeyTag> keys, KeyTag key, string tag)
+ 
+        private static void RenameInList(List<KeyTag> keys, KeyTag key, string tag)
         {
             for (int i = 0; i < keys.Count; i++)
             {
                 var k = keys[i];
-                    
+ 
                 if (k.Id == key.Id)
                 {
                     key.Value = tag;
@@ -169,37 +190,55 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                 }
             }
         }
-
-        private void OpenAdd(List<KeyTag> keys)
+ 
+        private void OpenAdd(List<KeyTag> keys, DrawerState state)
         {
             var lockedTagIds = PoolFastList<string>.Spawn();
-            
+ 
             foreach (var value in keys)
             {
                 lockedTagIds.Add(value.Value);
             }
-            
+ 
             KeyWidgetWindowAddTag.Open(lockedTagIds, tagId =>
             {
-                AddKey(keys, tagId);
-                
+                AddKey(keys, tagId, state);
                 PoolFastList<string>.Recycle(lockedTagIds);
             });
         }
-
-        private void AddKey(List<KeyTag> keys, string tag)
+ 
+        private void AddKey(List<KeyTag> keys, string tag, DrawerState state)
         {
             var keyItem = KeyTag.Create(tag);
-            
             keys.Add(keyItem);
-            
-            SetDirty();
+            SetDirty(state);
         }
-
-        private void SetDirty()
+ 
+        private static void SetDirty(DrawerState state)
         {
-            _modelKeys.SetDirty(true);
-            _isSaveDirty = true;
+            state.ModelKeys.SetDirty(true);
+            state.IsSaveDirty = true;
+        }
+ 
+        private static KeyCollection GetCollection(SerializedProperty property)
+        {
+            var target = property.serializedObject.targetObject;
+ 
+            var fieldInfo = ReflectionUtils.GetFieldInfo(target.GetType(), property.propertyPath);
+ 
+            if (fieldInfo != null)
+            {
+                return fieldInfo.GetValue(target) as KeyCollection;
+            }
+ 
+            return null;
+        }
+ 
+        private sealed class DrawerState
+        {
+            public readonly ModelKeyWidgetPathRoot ModelPath = new();
+            public readonly ModelKeyItems<KeyTag> ModelKeys = new(item => item);
+            public bool IsSaveDirty;
         }
     }
 }

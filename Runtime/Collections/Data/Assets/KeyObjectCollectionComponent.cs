@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Owners;
-using Sirenix.Serialization;
+using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
 	public abstract class KeyObjectCollectionComponent<T> : KeyCollectionComponentBase
 	{
-		[OdinSerialize] [NonSerialized] public KeyObjectCollection<T> Collection = new();
+		public KeyObjectCollection<T> Collection = new();
 
 		public override IEnumerable<IKeyCollectionOwner> GetCollections()
 		{
@@ -17,7 +17,7 @@ namespace EgorLin.Keys.Collections.Data.Assets
 
 		public T GetValue(int id)
 		{
-			return Collection.ValuesMap.GetValueByKey(id);
+			return Collection.MapId.GetValueByKey(id);
 		}
 	}
 }

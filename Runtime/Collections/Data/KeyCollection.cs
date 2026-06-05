@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Tags.Data;
@@ -5,6 +6,7 @@ using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data
 {
+	[Serializable]
 	public class KeyCollection : KeyCollectionBase
 	{
 		[SerializeField] private KeyTagValues _keys;
@@ -23,6 +25,19 @@ namespace EgorLin.Keys.Collections.Data
 				if (keyItem.Id == id)
 				{
 					return keyItem;
+				}
+			}
+			
+			return KeyTag.Empty;
+		}
+
+		public override KeyTag GetKeyByIdValue(KeyId id)
+		{
+			foreach (var keyTag in Keys)
+			{
+				if (keyTag.IdValue== id)
+				{
+					return keyTag;
 				}
 			}
 			

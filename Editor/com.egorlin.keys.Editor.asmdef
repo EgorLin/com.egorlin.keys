@@ -4,7 +4,9 @@
     "references": [
         "GUID:c123cd7602374d2585706cb7d4bc083a",
         "GUID:0ff4398da601a5d3b8ce461dba2ed628",
-        "GUID:035131e8c8163ea18905903ca60fc32d"
+        "GUID:035131e8c8163ea18905903ca60fc32d",
+        "UnityEngine.UIElementsModule",
+        "UnityEditor.UIElementsModule"
     ],
     "includePlatforms": [
         "Editor"

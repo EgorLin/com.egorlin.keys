@@ -14,5 +14,6 @@ namespace EgorLin.Keys.Owners
 		Object GetOwner();
 		bool HasOwner();
 		KeyTag GetKeyById(KeyId id);
+		KeyTag GetKeyByIdValue(KeyId id);
 	}
 }

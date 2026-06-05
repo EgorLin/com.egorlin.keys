@@ -1,13 +1,12 @@
-using System;
 using System.Collections.Generic;
 using EgorLin.Keys.Owners;
-using Sirenix.Serialization;
+using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
 	public class KeyCollectionComponent : KeyCollectionComponentBase
 	{
-        [OdinSerialize] [NonSerialized] public KeyCollection Collection = new();
+        [SerializeField] public KeyCollection Collection = new();
 
         public override IEnumerable<IKeyCollectionOwner> GetCollections()
         {

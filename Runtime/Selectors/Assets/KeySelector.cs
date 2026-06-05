@@ -11,16 +11,16 @@ namespace EgorLin.Keys.Selectors.Assets
     [InlineProperty]
     public class KeySelector 
     {
-        [HideInInspector] [SerializeField] private KeyId _keyId;
+        [HideInInspector] [SerializeField] private KeyId keyWindow;
         
         [SerializeField] public bool isSpecificCollection;
         [SerializeField] public UnityEngine.Object specificCollection;
 
-        public KeyId KeyId => _keyId;
+        public KeyId KeyWindow => keyWindow;
 
         public void SetKey(KeyId id)
         {
-            _keyId = id;
+            keyWindow = id;
         }
     }
 }

@@ -8,19 +8,35 @@ using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data
 {
+	[Serializable]
 	public class KeyObjectCollection<T> : KeyCollectionBase
 	{
 		[SerializeField] private KeyObjectEntryCollection<T> _keys;
-		[NonSerialized] private IntHashMap<T> _valuesMap;
+		[NonSerialized] private IntHashMap<T> _mapId;
+		[NonSerialized] private IntHashMap<T> _mapIdValue;
 
 		public List<KeyObjectEntry<T>> Keys => _keys.Values;
-		public IntHashMap<T> ValuesMap => BuildMap();
+		public IntHashMap<T> MapId => GetMapId();
+		public IntHashMap<T> MapIdValue => GetMapIdValue();
 
 		public override KeyTag GetKeyById(KeyId id)
 		{
 			foreach (var keyTag in Keys)
 			{
 				if (keyTag.Key.Id == id)
+				{
+					return keyTag.Key;
+				}
+			}
+			
+			return KeyTag.Empty;
+		}
+
+		public override KeyTag GetKeyByIdValue(KeyId id)
+		{
+			foreach (var keyTag in Keys)
+			{
+				if (keyTag.Key.IdValue== id)
 				{
 					return keyTag.Key;
 				}
@@ -81,21 +97,38 @@ namespace EgorLin.Keys.Collections.Data
 		}
 #endif
 
-		private IntHashMap<T> BuildMap()
+		private IntHashMap<T> GetMapId()
 		{
-			if (_valuesMap != null)
+			if (_mapId != null)
 			{
-				return _valuesMap;
+				return _mapId;
 			}
 			
-			_valuesMap = new IntHashMap<T>();
+			_mapId = new IntHashMap<T>();
 
 			foreach (var keyValue in _keys.Values)
 			{
-				_valuesMap.Set(keyValue.Key.Id, keyValue.Value);
+				_mapId.Set(keyValue.Key.Id, keyValue.Value);
 			}
 			
-			return _valuesMap;
+			return _mapId;
+		}
+		
+		private IntHashMap<T> GetMapIdValue()
+		{
+			if (_mapIdValue != null)
+			{
+				return _mapIdValue;
+			}
+			
+			_mapIdValue = new IntHashMap<T>();
+
+			foreach (var keyValue in _keys.Values)
+			{
+				_mapIdValue.Set(keyValue.Key.IdValue, keyValue.Value);
+			}
+			
+			return _mapIdValue;
 		}
 	}
 }

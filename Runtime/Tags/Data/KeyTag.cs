@@ -7,6 +7,8 @@ namespace EgorLin.Keys.Tags.Data
 	public struct KeyTag : IEquatable<KeyTag>
 	{
 		public string Value;
+		
+		public KeyId IdValue;
 		public KeyId Id;
 		
 		public static KeyTag Empty => new(KeyId.Empty);
@@ -15,22 +17,24 @@ namespace EgorLin.Keys.Tags.Data
 		{
 			Value = string.Empty;
 			Id = id;
+			IdValue = KeyId.Empty;
 		}
 
 		private KeyTag(string value, KeyId id)
 		{
 			Value = value;
 			Id = id;
+			IdValue = KeyId.Create(value);
 		}
 
 		public bool IsEmpty()
 		{
-			return Id.IsEmpty || string.IsNullOrEmpty(Value);
+			return Id.IsEmpty && IdValue.IsEmpty;
 		}
 
 		public bool Equals(KeyTag other)
 		{
-			return Id == other.Id;
+			return Id == other.Id && IdValue == other.IdValue;
 		}
 
 		public override int GetHashCode()
@@ -40,7 +44,7 @@ namespace EgorLin.Keys.Tags.Data
 
 		public static KeyTag CreateEmpty()
 		{
-			return new KeyTag();
+			return Empty;
 		}
 
 		public static KeyTag CreateWithEmptyValue(KeyId id)
@@ -48,10 +52,10 @@ namespace EgorLin.Keys.Tags.Data
 			return new KeyTag(string.Empty, id);
 		}
 
-		public static KeyTag Create(string tag)
+		public static KeyTag Create(string value)
 		{
 			var id = KeyId.Create();
-			return new KeyTag(tag, id);
+			return new KeyTag(value, id);
 		}
 	}
 }

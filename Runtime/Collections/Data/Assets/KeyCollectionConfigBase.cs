@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using EgorLin.Keys.Owners;
-using Sirenix.OdinInspector;
+using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
-	public abstract class KeyCollectionConfigBase : SerializedScriptableObject, IKeyCollectionContainer
+	public abstract class KeyCollectionConfigBase : ScriptableObject, IKeyCollectionContainer
 	{
 		public abstract IEnumerable<IKeyCollectionOwner> GetCollections();
 
