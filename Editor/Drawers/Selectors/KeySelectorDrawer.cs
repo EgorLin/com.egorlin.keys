@@ -59,11 +59,11 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             EnsureStyles();
 
             // Resolve child properties
-            var propIsSpecific  = property.FindPropertyRelative("isSpecificCollection");
-            var propCollection  = property.FindPropertyRelative("specificCollection");
+            var propIsSpecific  = property.FindPropertyRelative(nameof(KeySelector.isSpecificCollection));
+            var propCollection  = property.FindPropertyRelative(nameof(KeySelector.specificCollection));
             // In OnGUI, replace the single propKeyHash line with:
-            var propKeyWindow = property.FindPropertyRelative("keyWindow");
-            var propKeyHash   = propKeyWindow.FindPropertyRelative("Hash");
+            var propId = property.FindPropertyRelative("id");
+            var propKeyHash   = propId.FindPropertyRelative(nameof(KeyId.Hash));
 
             var keyId = KeyId.Create(propKeyHash.intValue); // int, not long
 

@@ -1,8 +1,6 @@
 ﻿using System;
 using EgorLin.Keys.Ids;
-using EgorLin.Keys.Owners;
 using Sirenix.OdinInspector;
-using Sirenix.Serialization;
 using UnityEngine;
 
 namespace EgorLin.Keys.Selectors.Assets
@@ -11,16 +9,16 @@ namespace EgorLin.Keys.Selectors.Assets
     [InlineProperty]
     public class KeySelector 
     {
-        [HideInInspector] [SerializeField] private KeyId keyWindow;
+        [HideInInspector] [SerializeField] private KeyId id;
         
         [SerializeField] public bool isSpecificCollection;
         [SerializeField] public UnityEngine.Object specificCollection;
 
-        public KeyId KeyWindow => keyWindow;
+        public KeyId ID => id;
 
-        public void SetKey(KeyId id)
+        public void SetKey(KeyId value)
         {
-            keyWindow = id;
+            id = value;
         }
     }
 }

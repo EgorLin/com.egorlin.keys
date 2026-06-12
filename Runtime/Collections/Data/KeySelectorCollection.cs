@@ -28,7 +28,7 @@ namespace EgorLin.Keys.Collections.Data
 
 			foreach (var keyValue in _keys.Values)
 			{
-				_valuesMap.Set(keyValue.Key.KeyWindow, keyValue.Value);
+				_valuesMap.Set(keyValue.Key.ID, keyValue.Value);
 			}
 			
 			return _valuesMap;
