@@ -1,9 +1,9 @@
 using EgorLin.Collections.Unsafe;
-using Sirenix.OdinInspector;
+using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
-	public class KeySelectorCollectionConfig<T> : SerializedScriptableObject
+	public class KeySelectorCollectionConfig<T> : ScriptableObject
 	{
 		public KeySelectorCollection<T> Collection = new();
 		

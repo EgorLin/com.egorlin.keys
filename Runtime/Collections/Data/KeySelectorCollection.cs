@@ -1,17 +1,13 @@
 using System;
 using EgorLin.Collections.Unsafe;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data
 {
 	[Serializable]
-	[HideLabel]
-	[HideReferenceObjectPicker]
-	[InlineProperty]
 	public class KeySelectorCollection<T>
 	{
-		[HideLabel] [HideReferenceObjectPicker] [InlineProperty] [SerializeField] private KeySelectorEntryCollection<T> _keys = new();
+		[SerializeField] private KeySelectorEntryCollection<T> _keys = new();
 		[NonSerialized] private IntHashMap<T> _valuesMap;
 		
 		public KeySelectorEntry<T>[] Keys => _keys.Values;

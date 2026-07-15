@@ -1,12 +1,11 @@
 using EgorLin.Collections.Unsafe;
-using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
-	public class KeySelectorCollectionComponent<T> : SerializedMonoBehaviour
+	public class KeySelectorCollectionComponent<T> : MonoBehaviour
 	{
-		[SerializeField] public KeySelectorCollection<T> Collection = new();
+		public KeySelectorCollection<T> Collection = new();
 		
 		public T GetValue(int id)
 		{

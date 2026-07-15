@@ -1,4 +1,3 @@
-using Sirenix.OdinInspector;
 using UnityEditor;
 using UnityEngine;
 
@@ -7,7 +6,6 @@ namespace EgorLin.Keys.Editor.CodeGeneration
 	[CreateAssetMenu(fileName = "KeyCollectionCodeGeneratorSettings", menuName = "Keys/Code Generator Settings")]
 	public class KeyCollectionCodeGeneratorSettings : ScriptableObject
 	{
-		[FolderPath]
 		[Tooltip("Folder where generated code files will be saved")]
 		public string OutputFolder = "Assets/App/Scripts/Data/Keys";
 		

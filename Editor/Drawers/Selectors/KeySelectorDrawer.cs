@@ -5,7 +5,6 @@ using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Owners;
 using EgorLin.Keys.Selectors.Assets;
-using Sirenix.OdinInspector.Editor;
 using UnityEditor;
 using UnityEngine;
 
