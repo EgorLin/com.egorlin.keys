@@ -1,8 +1,8 @@
-using EgorLin.Collections.Unsafe;
+using System.Collections.Generic;
 using EgorLin.Keys.Backend.Indexers.Collection;
 using EgorLin.Keys.Ids;
+using EgorLin.Keys.Pools;
 using EgorLin.Keys.Tags.Data;
-using EgorLin.Pools;
 
 namespace EgorLin.Keys.Backend.Indexers.Items
 {
@@ -24,7 +24,7 @@ namespace EgorLin.Keys.Backend.Indexers.Items
             return KeyTag.Empty;
 		}
 	
-		public static void FillPathTagByIndex(int index, FastList<string> itemsToFill)
+		public static void FillPathTagByIndex(int index, List<string> itemsToFill)
 		{
 			var hashSet = PoolHashSet<string>.Spawn();
 			

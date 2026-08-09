@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Backend.Indexers.Collection;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Owners;
+using EgorLin.Keys.Pools;
 using EgorLin.Keys.Tags.Data;
 using EgorLin.Keys.Utils;
-using EgorLin.Pools;
 using UnityEditor;
 using UnityEngine;
 
@@ -37,12 +36,12 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             window._collectionFilter = collectionFilter;
             window.ShowUtility();
             
-            var resultsBuffer = PoolFastList<ModelKeyCollectionEntrySearch>.Spawn();
+            var resultsBuffer = PoolList<ModelKeyCollectionEntrySearch>.Spawn();
 
             FillCollections(resultsBuffer, collectionFilter);
             
             CopyResults(window._results, resultsBuffer);
-            PoolFastList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
+            PoolList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
         }
      
         private void OnGUI()
@@ -299,7 +298,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             Close();
         }
      
-        private static void FillCollections(FastList<ModelKeyCollectionEntrySearch> buffer, IKeyCollectionContainer filter = null)
+        private static void FillCollections(List<ModelKeyCollectionEntrySearch> buffer, IKeyCollectionContainer filter = null)
         {
             if (filter != null)
             {
@@ -331,7 +330,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             _results.Clear();
             _keyUsageCache.Clear();
 
-            var resultsBuffer = PoolFastList<ModelKeyCollectionEntrySearch>.Spawn();
+            var resultsBuffer = PoolList<ModelKeyCollectionEntrySearch>.Spawn();
 
             FillCollections(resultsBuffer);
             
@@ -339,7 +338,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             {
                 CopyResults(_results, resultsBuffer);
                 
-                PoolFastList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
+                PoolList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
                 
                 return;
             }
@@ -354,7 +353,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
                 }
             }
             
-            PoolFastList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
+            PoolList<ModelKeyCollectionEntrySearch>.Recycle(resultsBuffer);
         }
 
         private static bool TryMatch(ModelKeyCollectionEntrySearch entryToCheck, string searchFormated,
@@ -403,7 +402,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             return false;
         }
 
-        private static void CopyResults(List<ModelKeyCollectionEntrySearch> destination, PooledFastList<ModelKeyCollectionEntrySearch> resultsBuffer)
+        private static void CopyResults(List<ModelKeyCollectionEntrySearch> destination, List<ModelKeyCollectionEntrySearch> resultsBuffer)
         {
             foreach (var entry in resultsBuffer)
             {

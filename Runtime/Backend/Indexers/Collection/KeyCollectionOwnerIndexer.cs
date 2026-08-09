@@ -1,5 +1,5 @@
 using System;
-using EgorLin.Collections.Unsafe;
+using System.Collections.Generic;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Owners;
 using EgorLin.Keys.Tags.Data;
@@ -9,8 +9,8 @@ namespace EgorLin.Keys.Backend.Indexers.Collection
 {
 	public class KeyCollectionOwnerIndexer
 	{
-		private static readonly IntHashMap<IKeyCollectionOwner> Map = new();
-		private static readonly FastList<IKeyCollectionOwner> Owners = new();
+		private static readonly Dictionary<int, IKeyCollectionOwner> Map = new();
+		private static readonly List<IKeyCollectionOwner> Owners = new();
 
 		public static void Clear()
 		{
@@ -25,21 +25,21 @@ namespace EgorLin.Keys.Backend.Indexers.Collection
 
 		public static IKeyCollectionOwner Get(KeyId keyId)
 		{
-			return Map.GetValueByKey(keyId);
+			return Map[keyId];
 		}
 
-		public static ReadOnlySpan<IKeyCollectionOwner> GetAllAssets()
+		public static List<IKeyCollectionOwner> GetAllAssets()
 		{
-			return Owners.AsReadOnlySpan();
+			return Owners;
 		}
 
 		public static void Add(KeyTag key, IKeyCollectionOwner config)
 		{
-			var success = Map.Add(key.Id, config, out _);
+			var success = Map.TryAdd(key.Id, config);
 
 			if (!success)
 			{
-				var oldAsset = Map.GetValueByKey(key.Id);
+				var oldAsset = Map[key.Id];
 		            
 				Debug.LogError($"[{nameof(IKeyCollectionOwner)}] {config.GetOwner().name} contains same key id {key.Id.ToString()} as {oldAsset.GetOwner().name}");
 			}

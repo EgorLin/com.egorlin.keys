@@ -1,4 +1,3 @@
-using EgorLin.Collections.Unsafe;
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
@@ -9,7 +8,7 @@ namespace EgorLin.Keys.Collections.Data.Assets
 		
 		public T GetValue(int id)
 		{
-			return Collection.ValuesMap.GetValueByKey(id);
+			return Collection.ValuesMap[id];
 		}
 	}
 }

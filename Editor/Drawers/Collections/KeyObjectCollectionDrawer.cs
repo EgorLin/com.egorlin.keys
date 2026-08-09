@@ -10,8 +10,8 @@ using EgorLin.Keys.Editor.Widgets.Dialogs;
 using EgorLin.Keys.Editor.Widgets.Items;
 using EgorLin.Keys.Editor.Widgets.Paths;
 using EgorLin.Keys.Editor.Widgets.Windows;
+using EgorLin.Keys.Pools;
 using EgorLin.Keys.Tags.Data;
-using EgorLin.Pools;
 using UnityEditor;
 using UnityEngine;
 
@@ -177,7 +177,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             KeyCollectionBase collBase,
             DrawerState state)
         {
-            var lockedTagIds = PoolFastList<string>.Spawn();
+            var lockedTagIds = PoolList<string>.Spawn();
  
             foreach (var key in collBase.GetAllKeys())
             {
@@ -187,7 +187,9 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             KeyWidgetWindowAddTag.Open(lockedTagIds, true, tagId =>
             {
                 adapter.Add(tagId, state);
-                PoolFastList<string>.Recycle(lockedTagIds);
+            }, () =>
+            {
+                PoolList<string>.Recycle(lockedTagIds);
             });
         }
  
@@ -291,7 +293,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
             public void RenameAt(int filteredIndex, DrawerState state)
             {
                 var entry        = _model.FilteredItems[filteredIndex];
-                var lockedTagIds = PoolFastList<string>.Spawn();
+                var lockedTagIds = PoolList<string>.Spawn();
  
                 foreach (var key in _collection.GetAllKeys())
                 {
@@ -313,7 +315,9 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                     }
  
                     SetDirty(state);
-                    PoolFastList<string>.Recycle(lockedTagIds);
+                }, () =>
+                {
+                    PoolList<string>.Recycle(lockedTagIds);
                 });
             }
  

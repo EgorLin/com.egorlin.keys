@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using EgorLin.Collections.Unsafe;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,10 +12,10 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         private Vector2 _scroll;
         private readonly List<string> _results = new();
         private Action<string> _onSelected;
-        private FastList<string> _passedTags = new();
+        private List<string> _passedTags = new();
         private Action _onClose;
 
-        public static void Open(FastList<string> passedTags, bool areTagsLocked, Action<string> onSelected, Action onClose = null)
+        public static void Open(List<string> passedTags, bool areTagsLocked, Action<string> onSelected, Action onClose = null)
         {
             _arePassedTagsLocked = areTagsLocked;
             var window = CreateInstance<KeyWidgetWindowAddTag>();
@@ -28,7 +27,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             window._onClose = onClose;
             
             window._passedTags = passedTags;
-            window._passedTags ??= new FastList<string>();
+            window._passedTags ??= new List<string>();
             
             window.RefreshResults();
             window.ShowUtility();
@@ -134,7 +133,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             return false;
         }
 
-        private static bool HasInPassedTags(string checkValue, FastList<string> lockedValues)
+        private static bool HasInPassedTags(string checkValue, List<string> lockedValues)
         {
             foreach (var value in lockedValues)
             {

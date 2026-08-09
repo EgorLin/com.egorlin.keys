@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
-using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Owners;
-using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data.Assets
 {
@@ -17,7 +14,7 @@ namespace EgorLin.Keys.Collections.Data.Assets
 
 		public T GetValue(int id)
 		{
-			return Collection.MapId.GetValueByKey(id);
+			return Collection.MapId[id];
 		}
 	}
 }

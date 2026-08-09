@@ -1,5 +1,5 @@
 using System;
-using EgorLin.Collections.Unsafe;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace EgorLin.Keys.Collections.Data
@@ -8,23 +8,23 @@ namespace EgorLin.Keys.Collections.Data
 	public class KeySelectorCollection<T>
 	{
 		[SerializeField] private KeySelectorEntryCollection<T> _keys = new();
-		[NonSerialized] private IntHashMap<T> _valuesMap;
+		[NonSerialized] private Dictionary<int, T> _valuesMap;
 		
 		public KeySelectorEntry<T>[] Keys => _keys.Values;
-		public IntHashMap<T> ValuesMap => BuildMap();
+		public Dictionary<int, T> ValuesMap => BuildMap();
 		
-		private IntHashMap<T> BuildMap()
+		private Dictionary<int, T> BuildMap()
 		{
 			if (_valuesMap != null)
 			{
 				return _valuesMap;
 			}
 			
-			_valuesMap = new IntHashMap<T>();
+			_valuesMap = new Dictionary<int, T>();
 
 			foreach (var keyValue in _keys.Values)
 			{
-				_valuesMap.Set(keyValue.Key.ID, keyValue.Value);
+				_valuesMap[keyValue.Key.ID] = keyValue.Value;
 			}
 			
 			return _valuesMap;

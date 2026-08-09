@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using EgorLin.Collections.Unsafe;
 using EgorLin.Keys.Ids;
 using EgorLin.Keys.Tags.Data;
 using UnityEngine;
@@ -12,12 +11,12 @@ namespace EgorLin.Keys.Collections.Data
 	public class KeyObjectCollection<T> : KeyCollectionBase
 	{
 		[SerializeField] private KeyObjectEntryCollection<T> _keys;
-		[NonSerialized] private IntHashMap<T> _mapId;
-		[NonSerialized] private IntHashMap<T> _mapIdValue;
+		[NonSerialized] private Dictionary<int, T> _mapId;
+		[NonSerialized] private Dictionary<int, T> _mapIdValue;
 
 		public List<KeyObjectEntry<T>> Keys => _keys.Values;
-		public IntHashMap<T> MapId => GetMapId();
-		public IntHashMap<T> MapIdValue => GetMapIdValue();
+		public Dictionary<int, T> MapId => GetMapId();
+		public Dictionary<int, T> MapIdValue => GetMapIdValue();
 
 		public override KeyTag GetKeyById(KeyId id)
 		{
@@ -97,35 +96,35 @@ namespace EgorLin.Keys.Collections.Data
 		}
 #endif
 
-		private IntHashMap<T> GetMapId()
+		private Dictionary<int, T> GetMapId()
 		{
 			if (_mapId != null)
 			{
 				return _mapId;
 			}
 			
-			_mapId = new IntHashMap<T>();
+			_mapId = new Dictionary<int, T>();
 
 			foreach (var keyValue in _keys.Values)
 			{
-				_mapId.Set(keyValue.Key.Id, keyValue.Value);
+				_mapId[keyValue.Key.Id] = keyValue.Value;
 			}
 			
 			return _mapId;
 		}
 		
-		private IntHashMap<T> GetMapIdValue()
+		private Dictionary<int, T> GetMapIdValue()
 		{
 			if (_mapIdValue != null)
 			{
 				return _mapIdValue;
 			}
 			
-			_mapIdValue = new IntHashMap<T>();
+			_mapIdValue = new Dictionary<int, T>();
 
 			foreach (var keyValue in _keys.Values)
 			{
-				_mapIdValue.Set(keyValue.Key.IdValue, keyValue.Value);
+				_mapIdValue[keyValue.Key.IdValue] = keyValue.Value;
 			}
 			
 			return _mapIdValue;
