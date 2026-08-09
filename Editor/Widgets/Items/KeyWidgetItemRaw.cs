@@ -17,7 +17,17 @@ namespace EgorLin.Keys.Editor.Widgets.Items
             
             var isRemoveClicked = KeyWidgetRemoveButton.Draw();
             var isRenameClicked = KeyWidgetItemRenameButton.Draw();
-            DrawCopyButton(textTag);
+            
+	        if (KeyWidgetItemCopyButton.Draw(KeyWidgetItemCopyButton.TextTooltipTag))
+	        {
+		        EditorGUIUtility.systemCopyBuffer = textTag;
+		        Debug.Log(string.Format(KeyWidgetItemCopyButton.TextDebug, textTag));
+	        }
+	        if (KeyWidgetItemCopyButton.Draw(KeyWidgetItemCopyButton.TextTooltipId))
+	        {
+		        EditorGUIUtility.systemCopyBuffer = tag.Id.ToString();
+		        Debug.Log(string.Format(KeyWidgetItemCopyButton.TextDebug, textTag));
+	        }
             
             KeyWidgetItemTag.Draw(textTag);
 
@@ -28,15 +38,6 @@ namespace EgorLin.Keys.Editor.Widgets.Items
             EditorGUILayout.EndHorizontal();
             
             return new KeyWidgetItemRawResult(isRemoveClicked, isRenameClicked);
-        }
-        
-        private static void DrawCopyButton(string tagValue)
-        {
-	        if (KeyWidgetItemCopyButton.Draw())
-	        {
-		        EditorGUIUtility.systemCopyBuffer = tagValue;
-		        Debug.Log(string.Format(KeyWidgetItemCopyButton.TextDebug, tagValue));
-	        }
         }
 	}
 

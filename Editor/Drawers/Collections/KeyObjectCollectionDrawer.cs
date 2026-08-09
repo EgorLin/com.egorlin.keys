@@ -184,7 +184,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                 lockedTagIds.Add(key.Value);
             }
  
-            KeyWidgetWindowAddTag.Open(lockedTagIds, tagId =>
+            KeyWidgetWindowAddTag.Open(lockedTagIds, true, tagId =>
             {
                 adapter.Add(tagId, state);
                 PoolFastList<string>.Recycle(lockedTagIds);
@@ -298,7 +298,7 @@ namespace EgorLin.Keys.Editor.Drawers.Collections
                     lockedTagIds.Add(key.Value);
                 }
  
-                KeyWidgetWindowAddTag.Open(lockedTagIds, tag =>
+                KeyWidgetWindowAddTag.Open(lockedTagIds, true, tag =>
                 {
                     for (int i = 0; i < _collection.Keys.Count; i++)
                     {

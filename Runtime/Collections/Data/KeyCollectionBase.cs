@@ -52,6 +52,18 @@ namespace EgorLin.Keys.Collections.Data
 			return path.Values;
 		}
 
+		public bool TryGetPathByIndex(int index, out KeyTag key)
+		{
+			if (index < path.Values.Count)
+			{
+				key = path.Values[index];
+				return true;
+			}
+			
+			key = default;
+			return false;
+		}
+
 		public Object GetOwner()
 		{
 			return owner;

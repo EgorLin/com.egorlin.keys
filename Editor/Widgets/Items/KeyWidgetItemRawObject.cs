@@ -106,7 +106,7 @@ namespace EgorLin.Keys.Editor.Widgets.Items
  
         private static void DrawCopyButton(string tagValue)
         {
-            if (KeyWidgetItemCopyButton.Draw())
+            if (KeyWidgetItemCopyButton.Draw(KeyWidgetItemCopyButton.TextTooltipTag))
             {
                 EditorGUIUtility.systemCopyBuffer = tagValue;
                 Debug.Log(string.Format(KeyWidgetItemCopyButton.TextDebug, tagValue));

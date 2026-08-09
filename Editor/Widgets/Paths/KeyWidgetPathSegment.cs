@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using EgorLin.Keys.Backend.Indexers.Items;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Dialogs;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Tags.Data;
+using EgorLin.Pools;
 using UnityEditor;
 using UnityEngine;
 
@@ -86,7 +88,11 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 
 			menu.AddItem(new GUIContent(MenuItemReplace), false, () =>
 			{
-				KeyWidgetWindowAddTag.Open(null, tagValue =>
+                var keysAvailable = PoolFastList<string>.Spawn();
+                
+                KeyItemIndexer.FillPathTagByIndex(indexDepth, keysAvailable);
+                
+				KeyWidgetWindowAddTag.Open(keysAvailable, false, tagValue =>
 				{
 					var node = pathNodes[indexDepth];
 
@@ -94,6 +100,9 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
 					pathNodes[indexDepth] = node;
 
 					onDirty();
+				}, () =>
+				{
+                    PoolFastList<string>.Recycle(keysAvailable);
 				});
 			});
 

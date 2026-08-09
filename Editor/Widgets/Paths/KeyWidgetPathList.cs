@@ -1,8 +1,11 @@
 using System;
+using EgorLin.Keys.Backend.Indexers.Collection;
+using EgorLin.Keys.Backend.Indexers.Items;
 using EgorLin.Keys.Collections.Data;
 using EgorLin.Keys.Editor.Widgets.Base;
 using EgorLin.Keys.Editor.Widgets.Windows;
 using EgorLin.Keys.Paths.Data;
+using EgorLin.Pools;
 using UnityEditor;
 using UnityEngine;
 
@@ -49,10 +52,17 @@ namespace EgorLin.Keys.Editor.Widgets.Paths
         {
             if (KeyWidgetBase.DrawColoredButton(LabelNewButton, TooltipNewButton, ColorNewButton, LayoutOptionsNewButton))
             {
-                KeyWidgetWindowAddTag.Open(null, (value) =>
+                var keysAvailable = PoolFastList<string>.Spawn();
+                
+                KeyItemIndexer.FillPathTagByIndex(collection.Paths.Count, keysAvailable);
+                
+                KeyWidgetWindowAddTag.Open(keysAvailable, false, (value) =>
                 {
                     collection.AddPath(value);
                     onDirty();
+                }, () =>
+                {
+                    PoolFastList<string>.Recycle(keysAvailable);
                 });
             }
         }

@@ -8,15 +8,17 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 {
     public class KeyWidgetWindowAddTag : EditorWindow
     {
+        private static bool _arePassedTagsLocked;
         private string _search = "";
         private Vector2 _scroll;
         private readonly List<string> _results = new();
         private Action<string> _onSelected;
-        private FastList<string> _lockedValues = new();
+        private FastList<string> _passedTags = new();
         private Action _onClose;
 
-        public static void Open(FastList<string> lockedTags, Action<string> onSelected, Action onClose = null)
+        public static void Open(FastList<string> passedTags, bool areTagsLocked, Action<string> onSelected, Action onClose = null)
         {
+            _arePassedTagsLocked = areTagsLocked;
             var window = CreateInstance<KeyWidgetWindowAddTag>();
             
             window.titleContent = new GUIContent(KeyWidgetWindowAddStyles.WindowTitle);
@@ -25,8 +27,8 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             window._onSelected = onSelected;
             window._onClose = onClose;
             
-            window._lockedValues = lockedTags;
-            window._lockedValues ??= new FastList<string>();
+            window._passedTags = passedTags;
+            window._passedTags ??= new FastList<string>();
             
             window.RefreshResults();
             window.ShowUtility();
@@ -72,6 +74,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             var searchFieldStyle = GUI.skin.FindStyle(KeyWidgetWindowAddStyles.StyleNameToolbarSearch) 
                 ?? EditorStyles.textField;
             _search = EditorGUILayout.TextField(_search, searchFieldStyle);
+            _search = _search.ToLowerInvariant();
             
             if (EditorGUI.EndChangeCheck())
             {
@@ -86,7 +89,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
      
         private void DrawResults()
         {
-            var resultsLabel = KeyWidgetWindowAddStyles.GetResultsLabel(_search, _results.Count);
+            var resultsLabel = KeyWidgetWindowAddStyles.GetResultsLabel(_arePassedTagsLocked, _results.Count);
             EditorGUILayout.LabelField(resultsLabel, EditorStyles.boldLabel);
             
             _scroll = EditorGUILayout.BeginScrollView(_scroll, 
@@ -94,7 +97,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             
             foreach (var tag in _results)
             {
-                if (DrawTagButton(tag, false, _lockedValues))
+                if (DrawTagButton(tag))
                 {
                     EditorGUILayout.EndScrollView();
                     return;
@@ -110,15 +113,13 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             EditorGUILayout.EndScrollView();
         }
      
-        private bool DrawTagButton(string tag, bool isRecent, FastList<string> lockedValues)
+        private bool DrawTagButton(string tag)
         {
             EditorGUILayout.BeginHorizontal(EditorStyles.helpBox);
-
-            var isLocked = HasInLocked(tag, lockedValues);
             
-            var icon = isRecent ? KeyWidgetWindowAddStyles.IconRecent : KeyWidgetWindowAddStyles.IconTag;
+            var icon = KeyWidgetWindowAddStyles.IconTag;
             
-            if (KeyWidgetWindowAddStyles.DrawTagButton(icon, tag, isLocked, KeyWidgetWindowAddStyles.GetTagButtonStyle()))
+            if (KeyWidgetWindowAddStyles.DrawTagButton(icon, tag, _arePassedTagsLocked, KeyWidgetWindowAddStyles.GetTagButtonStyle()))
             {
                 SelectTag(tag);
                 EditorGUILayout.EndHorizontal();
@@ -133,7 +134,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             return false;
         }
 
-        private static bool HasInLocked(string checkValue, FastList<string> lockedValues)
+        private static bool HasInPassedTags(string checkValue, FastList<string> lockedValues)
         {
             foreach (var value in lockedValues)
             {
@@ -148,7 +149,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 
         private void DrawCreateNew()
         {
-            if (HasInLocked(_search, _lockedValues))
+            if (HasInPassedTags(_search, _passedTags))
             {
                 DrawLockedExistingButton(_search);
             }
@@ -188,7 +189,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         {
             _results.Clear();
             
-            foreach (var keyTag in _lockedValues)
+            foreach (var keyTag in _passedTags)
             {
                 _results.Add(keyTag);
             }

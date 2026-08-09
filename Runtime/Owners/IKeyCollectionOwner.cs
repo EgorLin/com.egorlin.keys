@@ -15,5 +15,6 @@ namespace EgorLin.Keys.Owners
 		bool HasOwner();
 		KeyTag GetKeyById(KeyId id);
 		KeyTag GetKeyByIdValue(KeyId id);
+		bool TryGetPathByIndex(int index, out KeyTag key);
 	}
 }

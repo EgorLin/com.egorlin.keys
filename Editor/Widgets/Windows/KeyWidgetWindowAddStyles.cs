@@ -30,8 +30,8 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 		// Labels and text
 		public const string LabelHeader = "Select or Create Tag";
 		public const string LabelRecentTags = "Recently Used";
-		public const string LabelAllTags = "All Tags";
-		public const string LabelSearchResults = "Search Results";
+		public const string LabelAvailableTags = "Available Tags";
+		public const string LabelUnavailableTags = "Unavailable Tags";
 		public const string LabelResultsCount = "{0} ({1})";
 		
 		// Button labels
@@ -75,9 +75,9 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 			return ColorUsageHigh;
 		}
 		
-		public static string GetResultsLabel(string search, int count)
+		public static string GetResultsLabel(bool areTagsLocked, int count)
 		{
-			var label = string.IsNullOrEmpty(search) ? LabelAllTags : LabelSearchResults;
+			var label = areTagsLocked ? LabelUnavailableTags : LabelAvailableTags;
 			return string.Format(LabelResultsCount, label, count);
 		}
 		
