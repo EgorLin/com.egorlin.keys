@@ -266,8 +266,8 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             EditorStyles.objectField.fontSize  = 11;
             EditorStyles.objectField.padding   = new RectOffset(6, 4, 0, 0);
 
-            var result = EditorGUI.ObjectField(rect, current, typeof(Object), true);
-
+            var result = EditorGUI.ObjectField(rect, current, typeof(IKeyCollectionContainer), true);
+            
             EditorStyles.objectField.normal.background  = prevSkin;
             EditorStyles.objectField.active.background  = prevActive;
             EditorStyles.objectField.focused.background = prevFocused;
