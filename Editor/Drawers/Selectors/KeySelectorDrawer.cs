@@ -13,42 +13,34 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
     [CustomPropertyDrawer(typeof(KeySelector))]
     public class KeySelectorDrawer : PropertyDrawer
     {
-        private GUIStyle _headerLabelStyle;
-        private GUIStyle _badgeStyle;
-        private GUIStyle _sourceLabelStyle;
         private GUIStyle _keyPathStyle;
         private GUIStyle _keyPathEmptyStyle;
         private GUIStyle _iconStyle;
         private GUIStyle _collectionNameStyle;
-        private GUIStyle _collectionNameAssignedStyle;
 
         private bool _stylesInitialized;
+        private GUIStyle _fieldLabelStyle;
 
         private void EnsureStyles()
         {
             if (_stylesInitialized) return;
             _stylesInitialized           = true;
-            _headerLabelStyle            = KeySelectorDrawerStyles.CreateHeaderLabelStyle();
-            _badgeStyle                  = KeySelectorDrawerStyles.CreateBadgeStyle();
-            _sourceLabelStyle            = KeySelectorDrawerStyles.CreateSourceLabelStyle();
             _keyPathStyle                = KeySelectorDrawerStyles.CreateKeyPathStyle();
             _keyPathEmptyStyle           = KeySelectorDrawerStyles.CreateKeyPathEmptyStyle();
             _iconStyle                   = KeySelectorDrawerStyles.CreateIconStyle();
             _collectionNameStyle         = KeySelectorDrawerStyles.CreateCollectionNameStyle();
-            _collectionNameAssignedStyle = KeySelectorDrawerStyles.CreateCollectionNameAssignedStyle();
+            _fieldLabelStyle = KeySelectorDrawerStyles.CreateFieldLabelStyle();
         }
 
         // ─── Height ───────────────────────────────────────────────────────────────
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            return KeySelectorDrawerStyles.GroupHeaderHeight
-                 + 1f  // header border
-                 + KeySelectorDrawerStyles.BodyPadding
-                 + KeySelectorDrawerStyles.SourceRowHeight
-                 + KeySelectorDrawerStyles.RowGap
-                 + KeySelectorDrawerStyles.KeyRowHeight
-                 + KeySelectorDrawerStyles.BodyPadding;
+            return KeySelectorDrawerStyles.BodyPadding
+                   + KeySelectorDrawerStyles.SourceRowHeight
+                   + KeySelectorDrawerStyles.RowGap
+                   + KeySelectorDrawerStyles.KeyRowHeight
+                   + KeySelectorDrawerStyles.BodyPadding;
         }
 
         // ─── Main draw ────────────────────────────────────────────────────────────
@@ -70,15 +62,8 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             DrawAccentBorder(groupRect);
             DrawGroupBorder(groupRect);
 
-            // Header
-            var headerRect = new Rect(
-                groupRect.x, groupRect.y,
-                groupRect.width, KeySelectorDrawerStyles.GroupHeaderHeight);
-
-            DrawHeader(headerRect, label, keyId);
-
             // Body layout
-            float bodyY = headerRect.yMax + 1f;
+            float bodyY = groupRect.y;
             float bodyX = groupRect.x + KeySelectorDrawerStyles.AccentBorderWidth;
             float bodyW = groupRect.width - KeySelectorDrawerStyles.AccentBorderWidth;
 
@@ -95,7 +80,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 KeySelectorDrawerStyles.KeyRowHeight);
 
             EditorGUI.BeginChangeCheck();
-            DrawSourceRow(sourceRect, propIsSpecific, propCollection);
+            DrawSourceRow(sourceRect, label, propIsSpecific, propCollection);
             if (EditorGUI.EndChangeCheck())
                 property.serializedObject.ApplyModifiedProperties();
 
@@ -105,10 +90,6 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
         private void DrawGroupBackground(Rect rect)
         {
             EditorGUI.DrawRect(rect, KeySelectorDrawerStyles.ColorBodyBackground);
-
-            var headerRect = new Rect(rect.x, rect.y,
-                rect.width, KeySelectorDrawerStyles.GroupHeaderHeight);
-            EditorGUI.DrawRect(headerRect, KeySelectorDrawerStyles.ColorHeaderBackground);
         }
 
         private void DrawAccentBorder(Rect rect)
@@ -130,58 +111,23 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
                 KeySelectorDrawerStyles.ColorGroupBorder);
             EditorGUI.DrawRect(new Rect(rect.xMax - t, rect.y, t, rect.height),
                 KeySelectorDrawerStyles.ColorGroupBorder);
-
-            // Header divider
-            EditorGUI.DrawRect(
-                new Rect(rect.x, rect.y + KeySelectorDrawerStyles.GroupHeaderHeight, rect.width, t),
-                KeySelectorDrawerStyles.ColorGroupBorder);
-        }
-
-        // ─── Header ───────────────────────────────────────────────────────────────
-
-        private void DrawHeader(Rect rect, GUIContent label, KeyId keyId)
-        {
-            var labelRect = new Rect(
-                rect.x + KeySelectorDrawerStyles.AccentBorderWidth + 4f,
-                rect.y,
-                rect.width * 0.65f,
-                rect.height);
-
-            var displayLabel = label != null && !string.IsNullOrEmpty(label.text)
-                ? label.text.ToUpper()
-                : "KEY SELECTOR";
-
-            GUI.Label(labelRect, displayLabel, _headerLabelStyle);
-
-            bool isSet        = !keyId.IsEmpty;
-            var  badgeText    = isSet ? KeySelectorDrawerStyles.LabelAssigned : KeySelectorDrawerStyles.LabelUnassigned;
-            var  badgeBgColor = isSet ? KeySelectorDrawerStyles.ColorBadgeSetBg : KeySelectorDrawerStyles.ColorBadgeEmptyBg;
-            var  badgeTxColor = isSet ? KeySelectorDrawerStyles.ColorBadgeSetText : KeySelectorDrawerStyles.ColorBadgeEmptyText;
-
-            const float badgeW = 62f, badgeH = 14f;
-            var badgeRect = new Rect(
-                rect.xMax - badgeW - 6f,
-                rect.y + (rect.height - badgeH) / 2f,
-                badgeW, badgeH);
-
-            EditorGUI.DrawRect(badgeRect, badgeBgColor);
-            _badgeStyle.normal.textColor = badgeTxColor;
-            GUI.Label(badgeRect, badgeText, _badgeStyle);
         }
 
         // ─── Source row ───────────────────────────────────────────────────────────
 
-        private void DrawSourceRow(Rect rect,
+        private void DrawSourceRow(Rect rect, GUIContent label,
             SerializedProperty propIsSpecific,
             SerializedProperty propCollection)
         {
-            // "From" label
-            const float fromW = 32f;
-            GUI.Label(new Rect(rect.x, rect.y, fromW, rect.height),
-                KeySelectorDrawerStyles.LabelFrom, _sourceLabelStyle);
+            var displayLabel = label != null && !string.IsNullOrEmpty(label.text)
+                ? label.text
+                : "Key Selector";
+        
+            var labelRect = new Rect(rect.x, rect.y, KeySelectorDrawerStyles.SourceLabelWidth, rect.height);
+            GUI.Label(labelRect, displayLabel, _fieldLabelStyle);
 
             // Toggle pill
-            float toggleX    = rect.x + fromW + 4f;
+            float toggleX = labelRect.xMax + 6f;
             var   toggleRect = new Rect(
                 toggleX,
                 rect.y + (rect.height - KeySelectorDrawerStyles.ToggleHeight) / 2f,
