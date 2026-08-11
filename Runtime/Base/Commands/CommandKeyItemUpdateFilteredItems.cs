@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using EgorLin.Keys.Base.Models;
 using EgorLin.Keys.Utils;
+using UnityEditor.Search;
 
 namespace EgorLin.Keys.Base.Commands
 {
@@ -21,7 +22,7 @@ namespace EgorLin.Keys.Base.Commands
             foreach (var value in values)
             {
                 var tag = model.GetKeyItem(value);
-                var has = SearchUtils.FuzzyMatch(tag.Value, model.Text);
+                var has = FuzzySearch.FuzzyMatch(model.Text, tag.Value);
 
                 if (has)
                 {

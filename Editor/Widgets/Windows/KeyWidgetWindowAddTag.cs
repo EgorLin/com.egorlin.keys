@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.Search;
 using UnityEngine;
 
 namespace EgorLin.Keys.Editor.Widgets.Windows
@@ -93,13 +94,18 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
             
             _scroll = EditorGUILayout.BeginScrollView(_scroll, 
                 KeyWidgetWindowAddStyles.LayoutOptionScrollMaxHeight);
+
+            var isSearchEmpty = string.IsNullOrEmpty(_search);
             
             foreach (var tag in _results)
             {
-                if (DrawTagButton(tag))
+                if (isSearchEmpty || FuzzySearch.FuzzyMatch(_search, tag))
                 {
-                    EditorGUILayout.EndScrollView();
-                    return;
+                    if (DrawTagButton(tag))
+                    {
+                        EditorGUILayout.EndScrollView();
+                        return;
+                    }
                 }
             }
             

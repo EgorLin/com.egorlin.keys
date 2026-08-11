@@ -8,6 +8,7 @@ using EgorLin.Keys.Pools;
 using EgorLin.Keys.Tags.Data;
 using EgorLin.Keys.Utils;
 using UnityEditor;
+using UnityEditor.Search;
 using UnityEngine;
 
 namespace EgorLin.Keys.Editor.Widgets.Windows
@@ -361,7 +362,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
         {
             foreach (var resultPathPart in entryToCheck.Paths)
             {
-                var matched = SearchUtils.FuzzyMatch(resultPathPart.Value, searchFormated);
+                var matched = FuzzySearch.FuzzyMatch(searchFormated, resultPathPart.Value);
 
                 if (matched)
                 {
@@ -379,7 +380,7 @@ namespace EgorLin.Keys.Editor.Widgets.Windows
 
             foreach (var keyValue in entryToCheck.Keys)
             {
-                var matchedTag = SearchUtils.FuzzyMatch(keyValue.Value, searchFormated);
+                var matchedTag = FuzzySearch.FuzzyMatch(searchFormated, keyValue.Value);
 
                 if (matchedTag)
                 {
