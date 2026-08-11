@@ -3,11 +3,18 @@ using EgorLin.Keys.Selectors.Assets;
 
 namespace EgorLin.Keys.Collections.Data
 {
-	[Serializable]
-	public class KeySelectorEntryCollection<T>
-	{
-		public KeySelectorEntry<T>[] Values = Array.Empty<KeySelectorEntry<T>>();
-	}
+    public abstract class KeySelectorEntryCollectionBase
+    {
+        internal abstract int Count { get; }
+    }
+    
+    [Serializable]
+    public class KeySelectorEntryCollection<T> : KeySelectorEntryCollectionBase
+    {
+        public KeySelectorEntry<T>[] Values = Array.Empty<KeySelectorEntry<T>>();
+ 
+        internal override int Count => Values.Length;
+    }
 	
 	[Serializable]
 	public class KeySelectorEntry<T>
