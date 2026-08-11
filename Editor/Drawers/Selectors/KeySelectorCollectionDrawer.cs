@@ -182,7 +182,7 @@ namespace EgorLin.Keys.Editor.Drawers.Selectors
             var valueRect = new Rect(
                 rect.x, keyRect.yMax + 2f, rect.width,
                 EditorGUI.GetPropertyHeight(valueProp, true));
-            EditorGUI.PropertyField(valueRect, valueProp, new GUIContent("Value"), true);
+            EditorGUI.PropertyField(valueRect, valueProp, new GUIContent(""), true);
         }
 
         // ─── Height ─────────────────────────────────────────────────────────
